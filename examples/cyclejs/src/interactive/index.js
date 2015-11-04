@@ -3,7 +3,7 @@ import intent from './intent';
 import model from './model';
 import view from './view';
 
-export default function main(sources) {
+export default function InteractiveComponent(sources) {
   const id = cuid();
 
   const actions = intent(sources, id);

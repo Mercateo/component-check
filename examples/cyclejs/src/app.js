@@ -5,35 +5,40 @@ import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import combineLatestObj from 'rx-combine-latest-obj';
-import staticComponent from './static';
-import dynamicComponent from './dynamic';
-import interactiveComponent from './interactive';
-import configurableComponent from './configurable';
-import configurableComplexComponent from './configurable-complex';
-import composableComponent from './composable';
+import StaticComponent from './static';
+import DynamicComponent from './dynamic';
+import InteractiveComponent from './interactive';
+import ConfigurableComponent from './configurable';
+import ConfigurableComplexComponent from './configurable-complex';
+import ComposableComponent from './composable';
+import TransformableComponent from './transformable';
 
 function main(sources) {
   const componentVtrees$ = combineLatestObj({
-    staticComponent$: staticComponent(),
-    dynamicComponent1$: dynamicComponent(),
-    dynamicComponent2$: dynamicComponent(),
-    interactiveComponent1$: interactiveComponent(sources),
-    interactiveComponent2$: interactiveComponent(sources),
-    configurableComponent1$: configurableComponent(sources),
-    configurableComponent2$: configurableComponent(sources, Observable.just(17)),
-    configurableComplexComponent1$: configurableComplexComponent(sources, Observable.just({ value: 5, decrement: -2 })),
-    configurableComplexComponent2$: configurableComplexComponent(sources, Observable.just({ value: 2, increment: 10 })),
-    composableComponent1$: composableComponent(sources, Observable.just({ value: 20, decrementMin: -40, decrementMax: -5 })),
-    composableComponent2$: composableComponent(sources, Observable.just({ value: 100, incrementValue: 15 }))
+    staticComponent$: StaticComponent(),
+    dynamicComponent1$: DynamicComponent(),
+    dynamicComponent2$: DynamicComponent(),
+    interactiveComponent1$: InteractiveComponent(sources),
+    interactiveComponent2$: InteractiveComponent(sources),
+    configurableComponent1$: ConfigurableComponent(sources),
+    configurableComponent2$: ConfigurableComponent(sources, Observable.just(17)),
+    configurableComplexComponent1$: ConfigurableComplexComponent(sources, Observable.just({ value: 5, decrement: -2 })),
+    configurableComplexComponent2$: ConfigurableComplexComponent(sources, Observable.just({ value: 2, increment: 10 })),
+    composableComponent1$: ComposableComponent(sources, Observable.just({ value: 20, decrementMin: -40, decrementMax: -5 })),
+    composableComponent2$: ComposableComponent(sources, Observable.just({ value: 100, incrementValue: 15 })),
+    transformableComponent1$: TransformableComponent(sources),
+    transformableComponent2$: TransformableComponent(sources, Observable.just({ value: 17 }))
   });
 
   const vtree$ = componentVtrees$.map(state =>
     <div className="docs">
       <section className="example-section">
         <h1>Introduction</h1>
-        <p>This document should show how components can be developed with Cycle.js. We'll gradually
+        <p>This document should show how components can be developed with Cycle.js. We will gradually
            create more complex components to find a <em>universal skeleton</em> for components.
            Every component is rendered inside a grey box, so they can be easily distinguished.</p>
+        <p>We use Cycle.js' hungarian notation <code>$</code> for Observables and the convention to start
+           functions which return a component with a capital letter, even though they aren't constructor.</p>
       </section>
 
       <section className="example-section">
@@ -90,6 +95,17 @@ function main(sources) {
            the sliders to change the <code>props$</code> for the "counter".</p>
         <div className="component">{state.composableComponent1}</div>
         <div className="component">{state.composableComponent2}</div>
+      </section>
+
+      <section className="example-section">
+        <h1>Transformable</h1>
+        <p>You can easily transform existing components into new ones by modifying the returned <code>vtree$</code>.
+           Maybe you need this, if you use a 3rd-party component which you cannot change directly.
+           This can be as easy as adding additional CSS classes or as complex as reordering the whole markup.
+           (But be aware! This could lead to tight coupling.)<br/>
+           In this example we just add <code>&lt;span&gt;←&lt;/span&gt;</code> inside our slider component.</p>
+        <div className="component">{state.transformableComponent1}</div>
+        <div className="component">{state.transformableComponent2}</div>
       </section>
     </div>
   );

@@ -4,7 +4,7 @@ import intent from './intent';
 import model from './model';
 import view from './view';
 
-export default function main(sources, props$ = Observable.just({})) {
+export default function ConfigurableComplexComponent(sources, props$ = Observable.just({})) {
   const id = cuid();
 
   const actions = intent(sources, id);

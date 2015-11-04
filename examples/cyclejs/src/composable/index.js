@@ -1,13 +1,13 @@
 import cuid  from 'cuid';
 import { Observable } from 'rx';
 import combineLatestObj from 'rx-combine-latest-obj';
-import slider from './slider';
+import Slider from './slider';
 import counter from '../configurable-complex';
 import intent from './intent';
 import model from './model';
 import view from './view';
 
-export default function main(sources, props$ = Observable.just({})) {
+export default function ComposableComponent(sources, props$ = Observable.just({})) {
   const id = cuid();
 
   const actions = intent(sources, id);
@@ -20,7 +20,7 @@ export default function main(sources, props$ = Observable.just({})) {
       max: state.decrementMax
     }
   });
-  const decrementSlider = slider(sources, decrementProps$);
+  const decrementSlider = Slider(sources, decrementProps$);
 
   const incrementProps$ = state$.map(state => {
     return {
@@ -29,7 +29,7 @@ export default function main(sources, props$ = Observable.just({})) {
       max: state.incrementMax
     }
   });
-  const incrementSlider = slider(sources, incrementProps$);
+  const incrementSlider = Slider(sources, incrementProps$);
 
   const counterProps$ = state$.combineLatest(decrementSlider.state$, incrementSlider.state$, (state, decrementState, incrementState) => {
     return {
