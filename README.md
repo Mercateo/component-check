@@ -17,17 +17,26 @@ I will not look into [Polymer](https://www.polymer-project.org/) which is very c
 
 So what is a component? Let us keep the definition short and generic and treat them as re-usable and composable pieces of HTML, CSS and/or JavaScript code mostly used for GUI elements.
 
-## Goals
+#Table of contents
+
+- [Goals](#goals)
+- [Usage](#usage)
+- [A word about tooling](#a-word-about-tooling)
+- [Introducing: webpack](#introducing-webpack)
+- [Static components](#static-components)
+  - [Angular 1](#angular-1)
+
+# Goals
 
 - compare the usage and development of the same components written in the frameworks mentioned above
 - find _universal skeletons_ for components
 - find a common tooling around these frameworks
 
-## Usage
+# Usage
 
 I'll create an example for every component and every framework. You'll need to install the dependencies for these examples with `$ npm install`. You can than run an example with `$ npm start` and open [http://localhost:8080/](http://localhost:8080/) in your browser.
 
-## A word on tooling
+# A word about tooling
 
 I recommend to install a recent version of [Node](https://nodejs.org/en/) and [npm](https://www.npmjs.com/) before you start. I'll try to _not_ use [Bower](http://bower.io/) as a second package manager, because it is mostly superfluous nowadays. All frameworks mentioned above should be easily usable with npm only.
 
@@ -43,7 +52,7 @@ Webpack allows the usage of [CSS Modules](https://github.com/css-modules/css-mod
 
 _Note_: I personally like JSX, TypeScript, Babel and CSS Modules as they make my code safer, easier to write and more readable. But don't forget that these are additional compilation steps which _can_ introduce bugs or confuse new developers.
 
-## Introducing: webpack
+# Introducing: webpack
 
 Webpack is a tool which allows bundling _and_ processing of dependencies. It can handle nearly any kind of dependency - code or non-code assets like images, fonts, etc. You can break down the dependency to a specific component, so we can declare _which_ component needs a specific image, instead of loading all our needed images somewhere globally. The core concept behind this functionality is the so-called _loader_.
 
@@ -142,9 +151,9 @@ Alongside with our compiled JavaScript we generate a `index.html`. Its template 
 
 ```
 
-## Static components
+# Static components
 
-### Angular 1
+## Angular 1
 
 Let's start with a static component. I'll show examples in the order how the frameworks are mention at the beginning of this article. That means we'll start with Angular 1 which _of course_ deviates from our generic setup I just introduced. 😉
 
@@ -219,34 +228,34 @@ The browser should be refreshed by now and instead of a blank page you should se
 
 _Note_: As you can see Angular 1 uses its own module system and not _just_ ES6 modules. You basically declare dependencies by passing module names, but these modules aren't loaded from the file system. We need ES6 modules for that (or a similar technique).
 
-## Introducing: JSX
+# Introducing: JSX
 
 TODO
 
-## Introducing: TypeScript
+# Introducing: TypeScript
 
 TODO
 
-## Introducing: CSS Modules
+# Introducing: CSS Modules
 
 TODO
 
-## Dynamic components
+# Dynamic components
 
 TODO
 
-## Interactive components
+# Interactive components
 
 TODO
 
-## Configurable components
+# Configurable components
 
 TODO
 
-## Composable components
+# Composable components
 
 TODO
 
-## Transformable components
+# Transformable components
 
 TODO
