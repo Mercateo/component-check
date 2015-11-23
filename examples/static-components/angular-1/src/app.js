@@ -2,7 +2,7 @@ import angular from 'angular';
 import ngRoute from 'angular-route';
 import staticComponent from './static-component';
 
-angular.module('example', [
+angular.module('example-app', [
   ngRoute,
   staticComponent
 ]).config($routeProvider => {

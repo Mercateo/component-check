@@ -1,0 +1,27 @@
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/app.js',
+  output: {
+    path: './dist',
+    filename: 'app.js'
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel'
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
+  ],
+  devtool: 'cheap-module-eval-source-map',
+  devServer: {
+    contentBase: './dist'
+  }
+};

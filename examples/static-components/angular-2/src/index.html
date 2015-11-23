@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Angular 1 • static components</title>
+  <title>Angular 2 • static components</title>
 </head>
 <body>
-  <main ng-app="example-app"><ng-view>Loading...</ng-view></main>
+  <main><example-app>Loading...</example-app></main>
 
   {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
   <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>

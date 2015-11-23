@@ -11,7 +11,7 @@ In this project I want to compare the usage and development of components in sev
 * [Cycle.js](http://cycle.js.org/)
 * [React](https://facebook.github.io/react/) with [Freezer](https://github.com/arqex/freezer) (inspired by [_React.js the simple way_](https://medium.com/@arqex/react-the-simple-way-cabdf1f42f12))
 
-_Note_: This is a _work-in-progress_ and don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release.
+_Note_: This is a _work-in-progress_ and don't forget that Angular 2 is still an alpha, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release.
 I will not explain every framework in detail. I'll focus on creating components.
 I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented, because it doesn't support IE9 which is a requirement for our projects.
 
@@ -120,7 +120,9 @@ module.exports = {
     ]
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: './src/index.html' })
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
   ],
   devtool: 'cheap-module-eval-source-map',
   devServer: {
@@ -141,7 +143,7 @@ Alongside with our compiled JavaScript we generate a `index.html`. Its template 
   <title>Framework • example</title>
 </head>
 <body>
-  <main id="example">Loading...</main>
+  <main id="example-app">Loading...</main>
 
   {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
   <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>
@@ -160,16 +162,16 @@ Let's start with a static component. I'll show examples in the order how the fra
 Inside our `index.html` you must change the line:
 
 ```html
-<main id="example">Loading...</main>
+<main id="example-app">Loading...</main>
 ```
 
 to
 
 ```html
-<main ng-app="example"><ng-view>Loading...</ng-view></main>
+<main ng-app="example-app"><ng-view>Loading...</ng-view></main>
 ```
 
-because the entry point for an Angular application is defined with the `ng-app` attribute and a application name like `example` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
+because the entry point for an Angular application is defined with the `ng-app` attribute and a application name like `example-app` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
 Now we need to install Angular 1 and angular-route:
 
 ```bash
@@ -182,7 +184,7 @@ With this out of the way we can start developing. Our `app.js` looks like this:
 import angular from 'angular';
 import ngRoute from 'angular-route';
 
-angular.module('example', [
+angular.module('example-app', [
   ngRoute
 ]).config($routeProvider => {
   $routeProvider.when('/', {
@@ -191,7 +193,7 @@ angular.module('example', [
 });
 ```
 
-We load `angular` and `angular-route`. We create our module called `example` (the value from the `ng-app` attribute) and say it depends on `ngRoute`. In our `config` callback we [_inject_](https://docs.angularjs.org/guide/di) `$routeProvider` and say that it should render the `<static-component>` element, if you visit [http://localhost:8080/](http://localhost:8080/). Try it with running `$ npm start`! You'll see that the _"Loading..."_ text disappears... and nothing happens. That is expected, because we never declared a `<static-component>` element anywhere.
+We load `angular` and `angular-route`. We create our module called `example-app` (the value from the `ng-app` attribute) and say it depends on `ngRoute`. In our `config` callback we [_inject_](https://docs.angularjs.org/guide/di) `$routeProvider` and say that it should render the `<static-component>` element, if you visit [http://localhost:8080/](http://localhost:8080/). Try it with running `$ npm start`! You'll see that the _"Loading..."_ text disappears... and nothing happens. That is expected, because we never declared a `<static-component>` element anywhere.
 
 Create a new file `static-component/index.js` which looks like this:
 
@@ -214,7 +216,7 @@ import angular from 'angular';
 import ngRoute from 'angular-route';
 import staticComponent from './static-component';
 
-angular.module('example', [
+angular.module('example-app', [
   ngRoute,
   staticComponent
 ]).config($routeProvider => {
@@ -227,6 +229,99 @@ angular.module('example', [
 The browser should be refreshed by now and instead of a blank page you should see the text _"Static content."_ in a `<p>` element.
 
 _Note_: As you can see Angular 1 uses its own module system and not _just_ ES6 modules. You basically declare dependencies by passing module names, but these modules aren't loaded from the file system. We need ES6 modules for that (or a similar technique).
+
+## Angular 2
+
+Angular 2 uses ES6/7 features heavily. Some features like decorators are still in flux (just like Angular 2 itself). Sadly decorators are broken in the current version of Babel, so we use a fallback which needs the [reflect-metadata package](https://www.npmjs.com/package/reflect-metadata). Because Angular 2 can also break easily, we use a specific version for our example (`2.0.0-alpha.46`). Just install both modules with this command:
+
+```bash
+$ npm install --save angular2@2.0.0-alpha.46 reflect-metadata
+```
+
+Just as with Angular 1 we need to slightly adapt our `index.html`. Change
+
+Inside our `index.html` you must change the line:
+
+```html
+<main id="example-app">Loading...</main>
+```
+
+to
+
+```html
+<main><example-app>Loading...</example-app></main>
+```
+
+`<example-app>` will be the entry point for our application. As you can see our application is treated like a component on its own. This will be our skeleton:
+
+```javascript
+import 'reflect-metadata';
+import { Component, View, bootstrap } from 'angular2/angular2';
+
+class ExampleApp {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'example-app'
+      }),
+      new View({
+        template: `<static-component></<static-component>`
+      })
+    ];
+  }
+}
+
+bootstrap(ExampleApp);
+```
+
+Components are declared as classes which are written in PascalCase. You can name them like you want, so `ExampleApp` is _not_ translated to `<example-app>` in our HTML. `static get annotations` is our fallback, because we can't use decorators. Decorators/annotations are used to configure the component. We create a new `Component` instance and set a `selector`. _This_ selector refers to `<example-app>` in our `index.html`. We also create a new `View` instance which holds the same `template` as our previous example.
+
+If you run `$ npm start` you will see the _"Loading..."_ text disappear. We have to define our `<static-component>` again.
+
+To do so create a new file `static-component/index.js`:
+
+```javascript
+import { Component, View } from 'angular2/angular2';
+
+export default class StaticComponent {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'static-component'
+      }),
+      new View({
+        template: `<p>Static content.</p>`
+      })
+    ];
+  }
+}
+```
+
+As you can see we export this component class. Our application needs to import this component definition and use it in its template. Just add a `directive` property to your view configuration holding an array of component classes, which should be used.
+
+```javascript
+import 'reflect-metadata';
+import { Component, View, bootstrap } from 'angular2/angular2';
+import StaticComponent from './static-component';
+
+class ExampleApp {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'example-app'
+      }),
+      new View({
+        directives: [ StaticComponent ],
+        template: `<static-component></<static-component>`
+      })
+    ];
+  }
+}
+
+bootstrap(ExampleApp);
+```
+
+Save your changes. You should now see the text _"Static content."_ in your browser.
 
 # Introducing: JSX
 
