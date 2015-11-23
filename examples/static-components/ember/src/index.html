@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ember • static components</title>
+</head>
+<body>
+  <main id="example-app">Loading...</main>
+
+  <script>
+    window.EmberENV = {
+      FEATURES: {
+        // enables angle bracket components
+        'ember-htmlbars-component-generation': true
+      }
+    };
+  </script>
+
+  {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
+  <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>
+  {% } %}
+</body>
+</html>
