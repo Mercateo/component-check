@@ -25,6 +25,9 @@ So what is a component? Let us keep the definition short and generic and treat t
 - [Introducing: webpack](#introducing-webpack)
 - [Static components](#static-components)
   - [Angular 1](#angular-1)
+  - [Angular 2](#angular-2)
+  - [Ember](#ember)
+  - [Cycle.js](#cyclejs)
 
 # Goals
 
@@ -322,6 +325,109 @@ bootstrap(ExampleApp);
 ```
 
 Save your changes. You should now see the text _"Static content."_ in your browser.
+
+## Ember
+
+TODO
+
+## Cycle.js
+
+Cycle.js is a framework which introduces several concepts which deviate from the MVC frameworks from the last year. I recommend to read the [documentation of Cycle.js](http://cycle.js.org/) before you start, because I can't explain them here in detail. It is is a relatively small framework so you don't have to learn a lot of code, but you need to learn a new paradigm to write a good Cycle application.
+
+I'll try to break down the general idea:
+
+A Cycle application has a `main` function which accepts a `sources` object and returns a `_sinks` object. These objects can hold several [observables](http://reactivex.io/intro.html) which are provided by or passed to [drivers](http://cycle.js.org/drivers.html). You can think of an observable as an [_"asynchronous immutable array"_](https://medium.com/@andrestaltz/2-minute-introduction-to-rx-24c8ca793877). Drivers are _"side-effectful functions with Observables as input (for reading from the external world) and Observables as output (for writing side effects)"_ ([source](http://cycle.js.org/drivers.html)).
+
+A practical explanation could sound like this: You have a _DOM driver_ which passes events created by the user (like click events on a button) as an observable to the `main` function. The `main` function reads these observables and computes an output (like the markup for a button which is disabled after the first click) which is returned as an observable. The _DOM driver_ now renders the output.
+
+For a basic app skeleton we need three modules:
+- [`@cycle/core`](https://github.com/cyclejs/cycle-core): This package has just one function called `run` which _connects_ our `main` function with drivers.
+- [`@cycle/dom`](https://github.com/cyclejs/cycle-dom): This is a driver which allows our `main` function to interact with the DOM.
+- [`rx`](https://github.com/Reactive-Extensions/RxJS): RxJS is a library written around observables. If you write a Cycle application, you'll really write RxJS code 90% of the time.
+
+```bash
+$ npm install --save rx @cycle/core @cycle/dom
+```
+
+This time we don't need to change our `index.html`. We can look directly into our `app.js`:
+
+```javascript
+import { run } from '@cycle/core';
+import { makeDOMDriver, h } from '@cycle/dom';
+import { Observable } from 'rx';
+
+function main(sources) {
+  const vtree = h('div');
+  const vtree$ = Observable.just(vtree);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to out `DOM` driver instance as explained earlier. But what is this?:
+
+```javascript
+  const vtree = h('div');
+  const vtree$ = Observable.just(vtree);
+```
+
+As we work soly on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead the function `h` allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `h('div')` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
+
+If you run `$ ws start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quit powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
+
+Create a file `static-component/index.js`:
+
+```javascript
+import { h } from '@cycle/dom';
+import { Observable } from 'rx';
+
+export default function StaticComponent(sources) {
+  const vtree = h('p', 'Static content.');
+  const vtree$ = Observable.just(vtree);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+This looks nearly identical to our application skeleton, but instead of creating an empty `<div>` we create `<p>Static content.</p>`. We even pass `sources` to our component even though we don't use it (yet). However this will be needed by future components.
+
+Our `app.js` now looks like this:
+
+```javascript
+import { run } from '@cycle/core';
+import { makeDOMDriver, h } from '@cycle/dom';
+import { Observable } from 'rx';
+import StaticComponent from './static-component';
+
+function main(sources) {
+  const staticComponent = StaticComponent(sources);
+  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+We import `StaticComponent` and create a new component by calling it. We then `map` over `staticComponent.DOM` which will be called every time our markup changes (which is just _once_, because it is a static component) and place our virtual DOM from the component into a `<div>`.
+
+Run `$ ws start` now and you see the _"Static conent."_.
 
 # Introducing: JSX
 
