@@ -1,5 +1,5 @@
 import Ember from '../../ember-shim';
 import template from './template.hbs';
 
-Ember.TEMPLATES['components/foo-bar'] = template;
-export default Ember.GlimmerComponent.extend({});
+Ember.TEMPLATES['components/static-component'] = template;
+export default Ember.Component.extend({});

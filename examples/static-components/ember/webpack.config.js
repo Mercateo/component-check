@@ -15,10 +15,7 @@ module.exports = {
       },
       {
         test: /\.hbs$/,
-        loader: 'ember-templates',
-        emberTemplatesLoader: {
-          precompile: require('components-ember/ember-template-compiler').precompile
-        }
+        loader: 'ember-templates'
       }
     ]
   },

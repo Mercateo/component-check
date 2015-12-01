@@ -328,7 +328,128 @@ Save your changes. You should now see the text _"Static content."_ in your brows
 
 ## Ember
 
-TODO
+Ember is a framework which focuses a lot on productivity and conventions in multiple projects. Upside: If you're an Ember developer you can easily switch between multiple Ember projects. Downside: If you have heterogeneous projects or a lot of developers coming from other frameworks it can be troublesome to understand the internal logic which is sometimes hidden by Embers conventions. (At least in my opinion.)
+
+If you want to start an Ember project do yourself a favor and use [ember-cli](http://ember-cli.com/)! It is the official build tool for Ember which is used by _everyone_ in the Ember community. For this research however I tried to use Ember with webpack. I personally find that easier to use (nearly the same build process for _any_ framework) and easier to compare to other frameworks. Besides that I learned a lot about Ember by _not_ using ember-cli.
+
+Note: Ember will soon introduce angle brackets components, so you can write a component like this: `<static-component></static-component>`. I couldn't create a running example, because angle brackets components can only be used in canary builds of Ember. In these examples we use traditional curly braces components written as `{{static-component}}`. They will not just differ in syntax, but also in functionality. Angle brackets components will use one-way data-binding by default.
+
+Because Ember uses [Handlebars](http://handlebarsjs.com/) templates (or more precisely [HTMLBars](https://github.com/tildeio/htmlbars)) for views, we'll need to add a new loader to our `webpack.config.js`. (Note: This is exactly the job which ember-cli solves. You don't need to create your own build config. This is great! But if you want to re-use an existing build config as in our case, this can be troublesome.)
+
+First install [ember-templates-loader](https://github.com/shama/ember-templates-loader):
+
+```bash
+$ npm install --save-dev ember-templates-loader
+```
+
+And add a new loader to `webpack.config.js`:
+
+```javascript
+// existing babel loader for .js files
+{
+  test: /\.js$/,
+  exclude: /node_modules/,
+  loader: 'babel'
+},
+// new handlebars loader for .hbs files
+{
+  test: /\.hbs$/,
+  loader: 'ember-templates'
+}
+```
+
+Now we will install Ember itself. Sadly Ember is the only framework in this list, which doesn't use npm officialy. However we can use the build created for Bower by using the tarball directly:
+
+```bash
+$ npm install --save https://github.com/components/ember/tarball/2.2.0
+```
+
+This will also download [jQuery](https://jquery.com/) which is a dependency of Ember. Because Ember doesn't use npm we need to create small [shims](https://en.wikipedia.org/wiki/Shim_(computing)) to easily import Ember. First create a `src/jquery-shim.js`:
+
+```javascript
+import jQuery from 'jquery';
+window.jQuery = jQuery;
+```
+
+Now create a `src/ember-shim.js`:
+
+```javascript
+import './jquery-shim';
+import 'components-ember';
+export default window.Ember;
+```
+
+If you now `import Ember from './ember-shim';` both Ember and jQuery are correctly imported and can be treated like the other frameworks in this list.
+
+This is how our initial `app.js` will look like:
+
+```javascript
+import Ember from './ember-shim';
+import applicationTemplate from './templates/application.hbs';
+
+// register templates
+Ember.TEMPLATES.application = applicationTemplate;
+
+const ExampleApp = Ember.Application.extend({});
+
+ExampleApp.create({
+  ready() {
+    document.getElementById('example-app').remove();
+  }
+});
+```
+
+And we need `src/templates/application.hbs` as our initial template:
+
+```handlebars
+{{static-component}}
+```
+
+In this small code example you'll already see some of Embers conventions. Ember expects a template called `application` as the initially rendered template. We need to manually add it to `Ember.TEMPLATES`, because we use webpack. This would be done automatically if we would use ember-cli. We then `create` a new `Ember.Application`. Our application will be rendered as a child element into `body`. We need to remove `#example-app` on our own, when our application is `ready`. I couldn't figure out how to render the application directly into `#example-app` like other frameworks.
+
+As always: our application loads, _"Loading..."_ disappears... and nothing happens. We still need our static component which is rendered as `{{static-component}}`.
+
+It looks like this (`src/components/static-component/component.js`):
+
+```javascript
+import Ember from '../../ember-shim';
+import template from './template.hbs';
+
+Ember.TEMPLATES['components/static-component'] = template;
+export default Ember.Component.extend({});
+```
+
+And has this template (`src/components/static-component/template.hbs`) which needs to be manually added to `Ember.TEMPLATES`, too:
+
+```handlebars
+<p>Static content.</p>
+```
+
+Add it to your `app.js` like this:
+
+```javascript
+import Ember from './ember-shim';
+import applicationTemplate from './templates/application.hbs';
+import StaticComponent from './components/static-component/component';
+
+// register templates
+Ember.TEMPLATES.application = applicationTemplate;
+
+const ExampleApp = Ember.Application.extend({});
+
+// register components
+ExampleApp.StaticComponentComponent = StaticComponent;
+
+ExampleApp.create({
+  ready() {
+    document.getElementById('example-app').remove();
+  }
+});
+```
+
+Like our templates we need to register the component to our application. Again - this is something which happens automatically, if you use ember-cli. To register a component you add its name (in this case `StaticComponent`) with a `Component` suffix to `ExampleApp`. So yeah... You _need_ to name it `StaticComponentComponent`.
+
+Call `$ npm start` now. _"Loading..."_ disappears and _"Static content."_ is rendered.
 
 ## Cycle.js
 
@@ -336,7 +457,7 @@ Cycle.js is a framework which introduces several concepts which deviate from the
 
 I'll try to break down the general idea:
 
-A Cycle application has a `main` function which accepts a `sources` object and returns a `_sinks` object. These objects can hold several [observables](http://reactivex.io/intro.html) which are provided by or passed to [drivers](http://cycle.js.org/drivers.html). You can think of an observable as an [_"asynchronous immutable array"_](https://medium.com/@andrestaltz/2-minute-introduction-to-rx-24c8ca793877). Drivers are _"side-effectful functions with Observables as input (for reading from the external world) and Observables as output (for writing side effects)"_ ([source](http://cycle.js.org/drivers.html)).
+A Cycle application has a `main` function which accepts a `sources` object and returns a `sinks` object. These objects can hold several [observables](http://reactivex.io/intro.html) which are provided by or passed to [drivers](http://cycle.js.org/drivers.html). You can think of an observable as an [_"asynchronous immutable array"_](https://medium.com/@andrestaltz/2-minute-introduction-to-rx-24c8ca793877). Drivers are _"side-effectful functions with Observables as input (for reading from the external world) and Observables as output (for writing side effects)"_ ([source](http://cycle.js.org/drivers.html)).
 
 A practical explanation could sound like this: You have a _DOM driver_ which passes events created by the user (like click events on a button) as an observable to the `main` function. The `main` function reads these observables and computes an output (like the markup for a button which is disabled after the first click) which is returned as an observable. The _DOM driver_ now renders the output.
 

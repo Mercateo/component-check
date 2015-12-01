@@ -5,7 +5,7 @@
     "build": "webpack"
   },
   "dependencies": {
-    "components-ember": "https://github.com/components/ember/tarball/canary"
+    "components-ember": "https://github.com/components/ember/tarball/2.2.0"
   },
   "devDependencies": {
     "babel-core": "^6.2.1",
