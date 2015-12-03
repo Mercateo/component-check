@@ -28,6 +28,7 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [Angular 2](#angular-2)
   - [Ember](#ember)
   - [Cycle.js](#cyclejs)
+  - [React](#react)
 
 # Goals
 
@@ -549,6 +550,50 @@ run(main, drivers);
 We import `StaticComponent` and create a new component by calling it. We then `map` over `staticComponent.DOM` which will be called every time our markup changes (which is just _once_, because it is a static component) and place our virtual DOM from the component into a `<div>`.
 
 Run `$ ws start` now and you see the _"Static conent."_.
+
+## React
+
+At this time you would probably expect an introduction to Redux or freezer with a [flux-like architecture](https://medium.com/@arqex/react-the-simple-way-cabdf1f42f12). Both are needed to handle state changes in an application. Because we only look into static components for now we can focus on React and will introduce Redux and freezer at a later step.
+
+First install `react` and `react-dom`:
+
+```bash
+$ npm install --save react react-dom
+```
+
+Our app skeleton is very easy. This is our `src/app.js`:
+
+```javascript
+import React from 'react';
+import { render } from 'react-dom';
+
+render(
+  React.DOM.div(null, ''),
+  document.getElementById('example-app')
+);
+```
+
+`React.DOM` has several helper functions to create (virtual) DOM elements like a `div`. The first argument is an object to set attributes on the DOM element (in this case we pass `null`, because the generated `<div>` has no attributes), the second argument is the content of the element (in this case an empty string). Then we say `render` the configured element into `#example-app`.
+
+If you run `$ npm start` now the _"Loading..."_ text will disappear. So let us create a static component with React now. It is literally a one-liner:
+
+```javascript
+import React from 'react';
+
+export default React.createElement(() => React.DOM.p(null, 'Static content.'));
+```
+
+We create a new [stateless functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components) by passing a function returning just our static markup to `React.createElement` and export this component. We now import this component into our app and while we are it, let us rewrite our app into a one-liner, too. Just for fun.
+
+```javascript
+import React from 'react';
+import { render } from 'react-dom';
+import StaticComponent from './static-component';
+
+render(StaticComponent, document.getElementById('example-app'));
+```
+
+Call `$ npm start` and... _Success!_ You'll see _"Static content."_.
 
 # Introducing: JSX
 
