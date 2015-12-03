@@ -1,3 +1,3 @@
 import React from 'react';
 
-export default React.createElement(() => React.DOM.p(null, 'Static content.'));
+export default () => React.DOM.p(null, 'Static content.');

@@ -3,6 +3,6 @@ import { render } from 'react-dom';
 import StaticComponent from './static-component';
 
 render(
-  React.createElement(StaticComponent),
+  <StaticComponent />,
   document.getElementById('example-app')
 );

@@ -29,6 +29,7 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [Ember](#ember)
   - [Cycle.js](#cyclejs)
   - [React](#react)
+- [Introducing: JSX](#introducing-jsx)
 
 # Goals
 
@@ -573,31 +574,131 @@ render(
 );
 ```
 
-`React.DOM` has several helper functions to create (virtual) DOM elements like a `div`. The first argument is an object to set attributes on the DOM element (in this case we pass `null`, because the generated `<div>` has no attributes), the second argument is the content of the element (in this case an empty string). Then we say `render` the configured element into `#example-app`.
+`React.DOM` has several helper functions to create ([virtual](http://tonyfreed.com/blog/what_is_virtual_dom)) DOM elements like a `div`. The first argument is an object to set attributes on the DOM element (in this case we pass `null`, because the generated `<div>` has no attributes), the second argument is the content of the element (in this case an empty string). Then we say `render` the configured element into `#example-app`.
 
-If you run `$ npm start` now the _"Loading..."_ text will disappear. So let us create a static component with React now. It is literally a one-liner:
+If you run `$ npm start` now the _"Loading..."_ text will disappear. So let us create a static component with React now in a new file `static-component/index.js`. It is literally a one-liner:
 
 ```javascript
 import React from 'react';
 
-export default React.createElement(() => React.DOM.p(null, 'Static content.'));
+export default () => React.DOM.p(null, 'Static content.');
 ```
 
-We create a new [stateless functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components) by passing a function returning just our static markup to `React.createElement` and export this component. We now import this component into our app and while we are it, let us rewrite our app into a one-liner, too. Just for fun.
+We create a new [stateless functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components) by creating a function which just returns our static markup and export this as our component. We now import this component into our app and create an element from it.
 
 ```javascript
 import React from 'react';
 import { render } from 'react-dom';
 import StaticComponent from './static-component';
 
-render(StaticComponent, document.getElementById('example-app'));
+render(
+  React.createElement(StaticComponent),
+  document.getElementById('example-app')
+);
 ```
 
 Call `$ npm start` and... _Success!_ You'll see _"Static content."_.
 
 # Introducing: JSX
 
-TODO
+For all frameworks using a virtual DOM library I'll use [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) in the next examples. As said earlier JSX has pros and cons. I personally find it easier to read and I'll use it for this research project, but this is not a general recommendation. Anyway... let us recreate the static components examples for Cycle.js and React with JSX.
+
+First we need to enable Babel to read and transform JSX syntax. Install these two Babel plugins:
+
+```bash
+$ npm install --save-dev babel-plugin-syntax-jsx babel-plugin-transform-react-jsx
+```
+
+And change the `.babelrc`:
+
+```json
+{
+  "plugins": [
+    "transform-react-jsx"
+  ],
+  "presets": [
+    "es2015"
+  ]
+}
+```
+
+Let us first look into our React example. With JSX this is how our new `static-component/index.js` looks like:
+
+```javascript
+import React from 'react';
+
+export default () => <p>Static content.</p>;
+```
+
+And this our `app.js`:
+
+```javascript
+import React from 'react';
+import { render } from 'react-dom';
+import StaticComponent from './static-component';
+
+render(
+  <StaticComponent />,
+  document.getElementById('example-app')
+);
+```
+
+And now to our Cycle.js example. Install the same Babel plugins, but now modify your `.babelrc` to look like this:
+
+```json
+{
+  "plugins": [
+    [ "transform-react-jsx", { "pragma": "DOM.hJSX" } ]
+  ],
+  "presets": [
+    "es2015"
+  ]
+}
+```
+
+This change is necessary, because `transform-react-jsx` expects React as the default library for our virtual DOM (hence the name).
+
+Our `static-component/index.js` now looks like this:
+
+```javascript
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+
+export default function StaticComponent(sources) {
+  const vtree = <p>Static content.</p>;
+  const vtree$ = Observable.just(vtree);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+And this our `app.js`:
+
+```javascript
+/** @jsx hJSX */
+import { run } from '@cycle/core';
+import { makeDOMDriver, hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import StaticComponent from './static-component';
+
+function main(sources) {
+  const staticComponent = StaticComponent(sources);
+  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
 
 # Introducing: TypeScript
 
