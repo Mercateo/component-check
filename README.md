@@ -47,15 +47,15 @@ I recommend to install a recent version of [Node](https://nodejs.org/en/) and [n
 
 For frameworks using virtual DOM libraries I'll use [JSX](https://facebook.github.io/jsx/), which is a syntax extension to JavaScript which I _personally_ find more readable than using the libraries directly. However I'll show an example without JSX first, before I'll introduce JSX. Recommending JSX is highly subjective. Some people like it, some people don't. Time will tell, if there is a place for it in the future.
 
-I'll also use [TypeScript](http://www.typescriptlang.org/) in my examples. Like JSX this isn't a general recommendation. It is mostly because I want to look into it (again) myself.
+We'll compile JSX with [Babel](https://babeljs.io/) which also offers us the opportunity to write our code in [ES2015](https://babeljs.io/docs/learn-es2015/).
 
-Even if TypeScript supports JSX-compilation, I'll compile JSX with [Babel](https://babeljs.io/), because TypeScripts compilation only supports React by default and no other virtual DOM libraries.
+I really tried to use [TypeScript](http://www.typescriptlang.org/) in my examples, too. I like the idea behind it and that you'll catch bugs earlier and get a better auto-completion. I think I test TypeScript once in a year in different projects and always hit a dead end somewhere. Be it the combination of JSX+TS+non-React-framework, old or false TypeScript definitions files, _another_ package manager just for type definitions called `tsd`, a GitHub API rate limit which prevents me from downloading more type definitions... Just recently TypeScript added a way to add type definitions to your `package.json` with a `typings` property. This could _kill_ `tsd` in the future... if just... I think TypeScript needs a loose mode which basically allows a module _without_ a `typings` property in `package.json` to export everything as an `any` type. That way we could get rid of `tsd` and gradually get better type checks, if module authors add `typings` to `package.json`. But for now you would just get missing import errors...
 
 All examples will be build with [webpack](https://webpack.github.io/). It is currently my favorite way to build applications.
 
 Webpack allows the usage of [CSS Modules](https://github.com/css-modules/css-modules) which will keep us safe from global CSS class name clashes. Again... I don't recommend to use CSS Modules for your own projects (at least for now), but as this is a research project and I want to learn more about CSS Modules I'll use them here.
 
-_Note_: I personally like JSX, TypeScript, Babel and CSS Modules as they make my code safer, easier to write and more readable. But don't forget that these are additional compilation steps which _can_ introduce bugs or confuse new developers.
+_Note_: I personally like JSX, Babel and CSS Modules as they make my code safer, easier to write and more readable. But don't forget that these are additional compilation steps which _can_ introduce bugs or confuse new developers.
 
 # Introducing: webpack
 
@@ -699,10 +699,6 @@ const drivers = {
 
 run(main, drivers);
 ```
-
-# Introducing: TypeScript
-
-TODO
 
 # Introducing: CSS Modules
 
