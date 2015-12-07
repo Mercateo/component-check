@@ -30,6 +30,7 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [Cycle.js](#cyclejs)
   - [React](#react)
 - [Introducing: JSX](#introducing-jsx)
+- [Introducing: CSS Modules](#introducing-css-modules)
 
 # Goals
 
@@ -129,7 +130,7 @@ module.exports = {
       template: './src/index.html'
     })
   ],
-  devtool: 'cheap-module-eval-source-map',
+  devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist'
   }
@@ -138,7 +139,7 @@ module.exports = {
 
 We place our source code in a folder called `src/` and our compiled app will be outputted in a folder called `dist/`. Our development server uses `dist/` as its base. The entry point of our app will be a file called `src/app.js`. All JavaScript files are loaded by Babel and we'll generate a ["cheap" Source Map](https://webpack.github.io/docs/configuration.html#devtool) (only preserving lines).
 
-Alongside with our compiled JavaScript we generate a `index.html`. Its template looks like this:
+Alongside with our compiled JavaScript we generate a `src/index.html`. Its template looks like this:
 
 ```html
 <!DOCTYPE html>
@@ -155,7 +156,6 @@ Alongside with our compiled JavaScript we generate a `index.html`. Its template 
   {% } %}
 </body>
 </html>
-
 ```
 
 # Static components
@@ -164,26 +164,21 @@ Alongside with our compiled JavaScript we generate a `index.html`. Its template 
 
 Let's start with a static component. I'll show examples in the order how the frameworks are mention at the beginning of this article. That means we'll start with Angular 1 which _of course_ deviates from our generic setup I just introduced. 😉
 
-Inside our `index.html` you must change the line:
+Inside our `src/index.html` you must change one line:
 
-```html
-<main id="example-app">Loading...</main>
+```diff
+-<main id="example-app">Loading...</main>
++<main ng-app="example-app"><ng-view>Loading...</ng-view></main>
 ```
 
-to
-
-```html
-<main ng-app="example-app"><ng-view>Loading...</ng-view></main>
-```
-
-because the entry point for an Angular application is defined with the `ng-app` attribute and a application name like `example-app` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
+This is needed because the entry point for an Angular application is defined with the `ng-app` attribute and a application name like `example-app` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
 Now we need to install Angular 1 and angular-route:
 
 ```bash
 $ npm install --save angular angular-route
 ```
 
-With this out of the way we can start developing. Our `app.js` looks like this:
+With this out of the way we can start developing. Our `src/app.js` looks like this:
 
 ```javascript
 import angular from 'angular';
@@ -200,7 +195,7 @@ angular.module('example-app', [
 
 We load `angular` and `angular-route`. We create our module called `example-app` (the value from the `ng-app` attribute) and say it depends on `ngRoute`. In our `config` callback we [_inject_](https://docs.angularjs.org/guide/di) `$routeProvider` and say that it should render the `<static-component>` element, if you visit [http://localhost:8080/](http://localhost:8080/). Try it with running `$ npm start`! You'll see that the _"Loading..."_ text disappears... and nothing happens. That is expected, because we never declared a `<static-component>` element anywhere.
 
-Create a new file `static-component/index.js` which looks like this:
+Create a new file `src/static-component/index.js` which looks like this:
 
 ```javascript
 import angular from 'angular';
@@ -214,19 +209,19 @@ export default angular.module('static-component', []).directive('staticComponent
 
 Simple: We create a new module `static-component`, create a new directive `staticComponent` (camelCased so it is written as `<static-component>` in HTML) and return a plain object containing the template without logic. At the end our module name is exported, so it can be imported from our app and be used as a dependency.
 
-Let's see our updated `app.js`:
+Let's see our updated `src/app.js`:
 
-```javascript
+```diff
 import angular from 'angular';
 import ngRoute from 'angular-route';
-import staticComponent from './static-component';
++import staticComponent from './static-component';
 
 angular.module('example-app', [
   ngRoute,
-  staticComponent
++  staticComponent
 ]).config($routeProvider => {
   $routeProvider.when('/', {
-    template: `<static-component></<static-component>`
+    template: `<static-component></static-component>`
   });
 });
 ```
@@ -243,21 +238,14 @@ Angular 2 uses ES6/7 features heavily. Some features like decorators are still i
 $ npm install --save angular2@2.0.0-alpha.46 reflect-metadata
 ```
 
-Just as with Angular 1 we need to slightly adapt our `index.html`. Change
+Just as with Angular 1 we need to slightly adapt our `src/index.html`, so change this line:
 
-Inside our `index.html` you must change the line:
-
-```html
-<main id="example-app">Loading...</main>
+```diff
+-<main id="example-app">Loading...</main>
++<main><example-app>Loading...</example-app></main>
 ```
 
-to
-
-```html
-<main><example-app>Loading...</example-app></main>
-```
-
-`<example-app>` will be the entry point for our application. As you can see our application is treated like a component on its own. This will be our skeleton:
+`<example-app>` will be the entry point for our application. As you can see our application is treated like a component on its own. This will be our app skeleton:
 
 ```javascript
 import 'reflect-metadata';
@@ -270,7 +258,7 @@ class ExampleApp {
         selector: 'example-app'
       }),
       new View({
-        template: `<static-component></<static-component>`
+        template: `<static-component></static-component>`
       })
     ];
   }
@@ -283,7 +271,7 @@ Components are declared as classes which are written in PascalCase. You can name
 
 If you run `$ npm start` you will see the _"Loading..."_ text disappear. We have to define our `<static-component>` again.
 
-To do so create a new file `static-component/index.js`:
+To do so create a new file `src/static-component/index.js`:
 
 ```javascript
 import { Component, View } from 'angular2/angular2';
@@ -304,10 +292,10 @@ export default class StaticComponent {
 
 As you can see we export this component class. Our application needs to import this component definition and use it in its template. Just add a `directive` property to your view configuration holding an array of component classes, which should be used.
 
-```javascript
+```diff
 import 'reflect-metadata';
 import { Component, View, bootstrap } from 'angular2/angular2';
-import StaticComponent from './static-component';
++import StaticComponent from './static-component';
 
 class ExampleApp {
   static get annotations() {
@@ -316,8 +304,8 @@ class ExampleApp {
         selector: 'example-app'
       }),
       new View({
-        directives: [ StaticComponent ],
-        template: `<static-component></<static-component>`
++        directives: [ StaticComponent ],
+        template: `<static-component></static-component>`
       })
     ];
   }
@@ -344,20 +332,40 @@ First install [ember-templates-loader](https://github.com/shama/ember-templates-
 $ npm install --save-dev ember-templates-loader
 ```
 
-And add a new loader to `webpack.config.js`:
+And add a the new loader for Handlebars templates to `webpack.config.js`:
 
-```javascript
-// existing babel loader for .js files
-{
-  test: /\.js$/,
-  exclude: /node_modules/,
-  loader: 'babel'
-},
-// new handlebars loader for .hbs files
-{
-  test: /\.hbs$/,
-  loader: 'ember-templates'
-}
+```diff
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/app.js',
+  output: {
+    path: './dist',
+    filename: 'app.js'
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel'
+      },
++      {
++        test: /\.hbs$/,
++        loader: 'ember-templates'
++      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
+  ],
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist'
+  }
+};
 ```
 
 Now we will install Ember itself. Sadly Ember is the only framework in this list, which doesn't use npm officialy. However we can use the build created for Bower by using the tarball directly:
@@ -383,7 +391,7 @@ export default window.Ember;
 
 If you now `import Ember from './ember-shim';` both Ember and jQuery are correctly imported and can be treated like the other frameworks in this list.
 
-This is how our initial `app.js` will look like:
+This is how our initial `src/app.js` will look like:
 
 ```javascript
 import Ember from './ember-shim';
@@ -392,16 +400,14 @@ import applicationTemplate from './templates/application.hbs';
 // register templates
 Ember.TEMPLATES.application = applicationTemplate;
 
-const ExampleApp = Ember.Application.extend({});
-
-ExampleApp.create({
+const ExampleApp = Ember.Application.create({
   ready() {
     document.getElementById('example-app').remove();
   }
 });
 ```
 
-And we need `src/templates/application.hbs` as our initial template:
+And we need `src/application.hbs` as our initial template:
 
 ```handlebars
 {{static-component}}
@@ -411,42 +417,40 @@ In this small code example you'll already see some of Embers conventions. Ember 
 
 As always: our application loads, _"Loading..."_ disappears... and nothing happens. We still need our static component which is rendered as `{{static-component}}`.
 
-It looks like this (`src/components/static-component/component.js`):
+It looks like this (`src/static-component/index.js`):
 
 ```javascript
-import Ember from '../../ember-shim';
+import Ember from '../ember-shim';
 import template from './template.hbs';
 
 Ember.TEMPLATES['components/static-component'] = template;
 export default Ember.Component.extend({});
 ```
 
-And has this template (`src/components/static-component/template.hbs`) which needs to be manually added to `Ember.TEMPLATES`, too:
+And has this template (`src/static-component/template.hbs`) which needs to be manually added to `Ember.TEMPLATES`, too:
 
 ```handlebars
 <p>Static content.</p>
 ```
 
-Add it to your `app.js` like this:
+Now add your newly created component to your `src/app.js` like this:
 
-```javascript
+```diff
 import Ember from './ember-shim';
-import applicationTemplate from './templates/application.hbs';
-import StaticComponent from './components/static-component/component';
+import applicationTemplate from './application.hbs';
++import StaticComponent from './static-component';
 
 // register templates
 Ember.TEMPLATES.application = applicationTemplate;
 
-const ExampleApp = Ember.Application.extend({});
-
-// register components
-ExampleApp.StaticComponentComponent = StaticComponent;
-
-ExampleApp.create({
+const ExampleApp = Ember.Application.create({
   ready() {
     document.getElementById('example-app').remove();
   }
 });
+
++// register components
++ExampleApp.StaticComponentComponent = StaticComponent;
 ```
 
 Like our templates we need to register the component to our application. Again - this is something which happens automatically, if you use ember-cli. To register a component you add its name (in this case `StaticComponent`) with a `Component` suffix to `ExampleApp`. So yeah... You _need_ to name it `StaticComponentComponent`.
@@ -472,7 +476,7 @@ For a basic app skeleton we need three modules:
 $ npm install --save rx @cycle/core @cycle/dom
 ```
 
-This time we don't need to change our `index.html`. We can look directly into our `app.js`:
+This time we don't need to change our `src/index.html`. We can look directly into our `src/app.js`:
 
 ```javascript
 import { run } from '@cycle/core';
@@ -506,7 +510,7 @@ As we work soly on observables, we don't generate DOM markup directly (which is 
 
 If you run `$ ws start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quit powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
 
-Create a file `static-component/index.js`:
+Create a file `src/static-component/index.js`:
 
 ```javascript
 import { h } from '@cycle/dom';
@@ -524,17 +528,19 @@ export default function StaticComponent(sources) {
 
 This looks nearly identical to our application skeleton, but instead of creating an empty `<div>` we create `<p>Static content.</p>`. We even pass `sources` to our component even though we don't use it (yet). However this will be needed by future components.
 
-Our `app.js` now looks like this:
+Our `src/app.js` now looks like this:
 
-```javascript
+```diff
 import { run } from '@cycle/core';
 import { makeDOMDriver, h } from '@cycle/dom';
 import { Observable } from 'rx';
-import StaticComponent from './static-component';
++import StaticComponent from './static-component';
 
 function main(sources) {
-  const staticComponent = StaticComponent(sources);
-  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
+-  const vtree = h('div');
+-  const vtree$ = Observable.just(vtree);
++  const staticComponent = StaticComponent(sources);
++  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
   const sinks = {
     DOM: vtree$
   };
@@ -576,7 +582,7 @@ render(
 
 `React.DOM` has several helper functions to create ([virtual](http://tonyfreed.com/blog/what_is_virtual_dom)) DOM elements like a `div`. The first argument is an object to set attributes on the DOM element (in this case we pass `null`, because the generated `<div>` has no attributes), the second argument is the content of the element (in this case an empty string). Then we say `render` the configured element into `#example-app`.
 
-If you run `$ npm start` now the _"Loading..."_ text will disappear. So let us create a static component with React now in a new file `static-component/index.js`. It is literally a one-liner:
+If you run `$ npm start` now the _"Loading..."_ text will disappear. So let us create a static component with React now in a new file `src/static-component/index.js`. It is literally a one-liner:
 
 ```javascript
 import React from 'react';
@@ -584,15 +590,16 @@ import React from 'react';
 export default () => React.DOM.p(null, 'Static content.');
 ```
 
-We create a new [stateless functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components) by creating a function which just returns our static markup and export this as our component. We now import this component into our app and create an element from it.
+We create a new [stateless functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components) by creating a function which just returns our static markup and export this as our component. We now import this component into our `src/app.js` and create an element from it.
 
-```javascript
+```diff
 import React from 'react';
 import { render } from 'react-dom';
-import StaticComponent from './static-component';
++import StaticComponent from './static-component';
 
 render(
-  React.createElement(StaticComponent),
+-  React.DOM.div(null, ''),
++  React.createElement(StaticComponent),
   document.getElementById('example-app')
 );
 ```
@@ -611,44 +618,47 @@ $ npm install --save-dev babel-plugin-syntax-jsx babel-plugin-transform-react-js
 
 And change the `.babelrc`:
 
-```json
+```diff
 {
-  "plugins": [
-    "transform-react-jsx"
-  ],
++  "plugins": [
++    "transform-react-jsx"
++  ],
   "presets": [
     "es2015"
   ]
 }
 ```
 
-Let us first look into our React example. With JSX this is how our new `static-component/index.js` looks like:
+Let us first look into our React example. With JSX this is how our new `src/static-component/index.js` looks like:
 
-```javascript
+```diff
 import React from 'react';
 
-export default () => <p>Static content.</p>;
+-export default () => React.DOM.p(null, 'Static content.');
++export default () => <p>Static content.</p>;
 ```
 
 And this our `app.js`:
 
-```javascript
+```diff
 import React from 'react';
 import { render } from 'react-dom';
 import StaticComponent from './static-component';
 
 render(
-  <StaticComponent />,
+-  React.createElement(StaticComponent),
++  <StaticComponent />,
   document.getElementById('example-app')
 );
 ```
 
 And now to our Cycle.js example. Install the same Babel plugins, but now modify your `.babelrc` to look like this:
 
-```json
+```diff
 {
   "plugins": [
-    [ "transform-react-jsx", { "pragma": "DOM.hJSX" } ]
+-    "transform-react-jsx"
++    [ "transform-react-jsx", { "pragma": "DOM.hJSX" } ]
   ],
   "presets": [
     "es2015"
@@ -658,15 +668,17 @@ And now to our Cycle.js example. Install the same Babel plugins, but now modify 
 
 This change is necessary, because `transform-react-jsx` expects React as the default library for our virtual DOM (hence the name).
 
-Our `static-component/index.js` now looks like this:
+Our `src/static-component/index.js` now looks like this:
 
-```javascript
-/** @jsx hJSX */
-import { hJSX } from '@cycle/dom';
+```diff
++/** @jsx hJSX */
+-import { h } from '@cycle/dom';
++import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
-  const vtree = <p>Static content.</p>;
+-  const vtree = h('p', 'Static content.');
++  const vtree = <p>Static content.</p>;
   const vtree$ = Observable.just(vtree);
   const sinks = {
     DOM: vtree$
@@ -675,18 +687,20 @@ export default function StaticComponent(sources) {
 }
 ```
 
-And this our `app.js`:
+And this our `src/app.js`:
 
-```javascript
-/** @jsx hJSX */
+```diff
++/** @jsx hJSX */
 import { run } from '@cycle/core';
-import { makeDOMDriver, hJSX } from '@cycle/dom';
+-import { makeDOMDriver, h } from '@cycle/dom';
++import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import StaticComponent from './static-component';
 
 function main(sources) {
   const staticComponent = StaticComponent(sources);
-  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
+-  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
++  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
   const sinks = {
     DOM: vtree$
   };
@@ -702,7 +716,173 @@ run(main, drivers);
 
 # Introducing: CSS Modules
 
-TODO
+The next thing will we setup before we move on are CSS Modules. I think no one would deny that styling is an integral part of component development, but it hasn't got the attention it needed in the last years. CSS styling can be quite hard and the main reason for this is, that CSS styling is done globally. If you have two components using the same CSS class names, you'll probably get styling errors. [Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM) can help with that (CSS is scoped to a single component), but it has its own problems (no server-side rendering, lack of support, etc.). Most JS frameworks only focus on the _behavior_ of a component and not on its _look_, so we need a little bit of tooling on this side. Meet [CSS Modules](https://github.com/css-modules/css-modules)!
+
+With CSS Modules two components can use the same CSS class name without styling errors, because every CSS class name is _hashed_ in a unique way. This happens when a component imports a CSS file. Importing a CSS file into a JS file? That sounds like a job for webpack! To do that we need to install two new modules:
+
+- [css-loader](https://github.com/webpack/css-loader): This module loads our CSS files, hashes the CSS class names and generates Source Maps.
+- [extract-text-webpack-plugin](https://github.com/webpack/extract-text-webpack-plugin): This webpack plugin extracts every loaded CSS file and bundle the styles into a single CSS file.
+
+
+```bash
+$ npm install --save-dev css-loader extract-text-webpack-plugin
+```
+
+To use these modules we need to configure our `webpack.config.js` to load CSS files and save them in a single file:
+
+```diff
+var HtmlWebpackPlugin = require('html-webpack-plugin');
++var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+module.exports = {
+  entry: './src/app.js',
+  output: {
+    path: './dist',
+    filename: 'app.js'
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel'
+      },
++      {
++        test: /\.css$/,
++        loader: ExtractTextPlugin.extract('css?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]')
++      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    }),
++    new ExtractTextPlugin('styles.css')
+  ],
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist'
+  }
+};
+```
+
+As you can see the css-loader module is configured via query parameter and the `localIdentName` value determines our hash pattern (`[name]__[local]___[hash:base64:5]` - with `name` as the file name of the CSS file and `local` as the CSS class name).
+
+We also need to change our `src/index.html` template to load our CSS files just like it loads our JS files:
+
+```diff
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Framework • example</title>
+
++  {% for (var css in o.htmlWebpackPlugin.files.css) { %}
++  <link href="{%= o.htmlWebpackPlugin.files.css[css] %}" rel="stylesheet">
++  {% } %}
+</head>
+<body>
+  <main id="example-app">Loading...</main>
+
+  {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
+  <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>
+  {% } %}
+</body>
+</html>
+```
+
+You can create a `src/static-component/static-component.css` file now, which looks identically for every framework:
+
+```css
+.p {
+  color: red;
+}
+```
+
+We use the generic class name `.p` which will style our `<p>` element we used in all of our static components, so its text color becomes red. Even if we would create a second component usind the _same_ class name and a text color of blue, our static component would still have red text, because our `.p` becomes hashed to something like `.static-component__p___3YbjK`. That's why I recommend to name your CSS file exactly like your component, because the name shows up in your hashed class name which is easier to read. But even you name your file to something generic like `style.css` you'll have great Source Map support, which always shows you the original file.
+
+Even though the CSS file looks the same for every framework, the way it is loaded is slightly different every time. So let us try to break it down and begin with Angular 1 and its `src/static-component/index.js`:
+
+```diff
+import angular from 'angular';
++import styles from './static-component.css';
+
+export default angular.module('static-component', []).directive('staticComponent', () => {
+  return {
+-    template: `<p>Static content.</p>`
++    template: `<p class="${styles.p}">Static content.</p>`
+  };
+}).name;
+```
+
+This is Angular 2 and its `src/static-component/index.js`:
+
+```diff
+import { Component, View } from 'angular2/angular2';
++import styles from './static-component.css';
+
+export default class StaticComponent {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'static-component'
+      }),
+      new View({
+-        template: `<p>Static content.</p>`
++        template: `<p class="${styles.p}">Static content.</p>`
+      })
+    ];
+  }
+}
+```
+
+This is Ember and its `src/static-component/index.js` _and_ its `src/static-component/template.hbs` :
+
+```diff
+import Ember from '../ember-shim';
+import template from './template.hbs';
++import styles from './static-component.css';
+
+Ember.TEMPLATES['components/static-component'] = template;
+-export default Ember.Component.extend({});
++export default Ember.Component.extend({ styles });
+```
+
+```diff
+-<p>Static content.</p>
++<p class="{{styles.p}}">Static content.</p>
+```
+
+This is Cycle and its `src/static-component/index.js`:
+
+```diff
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import styles from './static-component.css';
+
+export default function StaticComponent(sources) {
+-  const vtree = <p>Static content.</p>;
++  const vtree = <p className={styles.p}>Static content.</p>;
+  const vtree$ = Observable.just(vtree);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+This is React and its `src/static-component/index.js`:
+
+```diff
+import React from 'react';
+import styles from './static-component.css';
+
+-export default () => <p>Static content.</p>;
++export default () => <p className={styles.p}>Static content.</p>;
+```
+
+Awesome! Thank you for reading so far and thank your self, too! You now have a very nice setup for creating great components. We can now move on to examples showing you how to create more complex components.
 
 # Dynamic components
 

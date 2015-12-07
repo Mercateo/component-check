@@ -1,9 +1,9 @@
-# Static components in Redux
+# Static components in Angular 2
 
 ## Install
 
 1. Clone this repository.
-2. Go to `$ cd examples/static-components-jsx/react`.
+2. Go to `$ cd examples/static-components-css-modules/angular-2`.
 3. Install all dependencies with `$ npm install`.
 
 ## Usage

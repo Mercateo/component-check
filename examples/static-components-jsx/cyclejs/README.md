@@ -3,7 +3,7 @@
 ## Install
 
 1. Clone this repository.
-2. Go to `$ cd examples/static-components/cyclejs`.
+2. Go to `$ cd examples/static-components-jsx/cyclejs`.
 3. Install all dependencies with `$ npm install`.
 
 ## Usage

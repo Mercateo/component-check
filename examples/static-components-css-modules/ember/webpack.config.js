@@ -15,18 +15,17 @@ module.exports = {
         loader: 'babel'
       },
       {
-        test: /\.html$/,
-        loader: 'html'
+        test: /\.hbs$/,
+        loader: 'ember-templates'
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
+        loader: ExtractTextPlugin.extract('css?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]')
       }
     ]
   },
   plugins: [
     new HtmlWebpackPlugin({
-      // example: https://github.com/ampedandwired/html-webpack-plugin/blob/master/default_index.html
       template: './src/index.html'
     }),
     new ExtractTextPlugin('styles.css')
