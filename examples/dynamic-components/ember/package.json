@@ -5,13 +5,15 @@
     "build": "webpack"
   },
   "dependencies": {
-    "angular2": "2.0.0-alpha.46",
-    "reflect-metadata": "^0.1.2"
+    "components-ember": "https://github.com/components/ember/tarball/2.2.0"
   },
   "devDependencies": {
     "babel-core": "^6.2.1",
     "babel-loader": "^6.2.0",
     "babel-preset-es2015": "^6.1.18",
+    "css-loader": "^0.23.0",
+    "ember-templates-loader": "^1.13.0",
+    "extract-text-webpack-plugin": "^0.9.1",
     "html-webpack-plugin": "^1.6.2",
     "webpack": "^1.12.6",
     "webpack-dev-server": "^1.12.1"

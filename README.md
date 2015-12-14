@@ -7,9 +7,8 @@ In this project I want to compare the usage and development of components in sev
 * [Angular 1](https://angularjs.org/)
 * [Angular 2](https://angular.io/)
 * [Ember](http://emberjs.com/)
-* [Redux](http://redux.js.org/)
 * [Cycle.js](http://cycle.js.org/)
-* [React](https://facebook.github.io/react/) with [Freezer](https://github.com/arqex/freezer) (inspired by [_React.js the simple way_](https://medium.com/@arqex/react-the-simple-way-cabdf1f42f12))
+* [React](https://facebook.github.io/react/) with [Redux](http://redux.js.org/)
 
 _Note_: This is a _work-in-progress_ and don't forget that Angular 2 is still an alpha, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release.
 I will not explain every framework in detail. I'll focus on creating components.
@@ -31,6 +30,12 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [React](#react)
 - [Introducing: JSX](#introducing-jsx)
 - [Introducing: CSS Modules](#introducing-css-modules)
+- [Dynamic components](#dynamic-components)
+  - [Angular 1](#angular-1)
+  - [Angular 2](#angular-2)
+  - [Ember](#ember)
+  - [Cycle.js](#cyclejs)
+  - [Redux](#redux)
 
 # Goals
 
@@ -50,7 +55,7 @@ For frameworks using virtual DOM libraries I'll use [JSX](https://facebook.githu
 
 We'll compile JSX with [Babel](https://babeljs.io/) which also offers us the opportunity to write our code in [ES2015](https://babeljs.io/docs/learn-es2015/).
 
-I really tried to use [TypeScript](http://www.typescriptlang.org/) in my examples, too. I like the idea behind it and that you'll catch bugs earlier and get a better auto-completion. I think I test TypeScript once in a year in different projects and always hit a dead end somewhere. Be it the combination of JSX+TS+non-React-framework, old or false TypeScript definitions files, _another_ package manager just for type definitions called `tsd`, a GitHub API rate limit which prevents me from downloading more type definitions... Just recently TypeScript added a way to add type definitions to your `package.json` with a `typings` property. This could _kill_ `tsd` in the future... if just... I think TypeScript needs a loose mode which basically allows a module _without_ a `typings` property in `package.json` to export everything as an `any` type. That way we could get rid of `tsd` and gradually get better type checks, if module authors add `typings` to `package.json`. But for now you would just get missing import errors...
+I really tried to use [TypeScript](http://www.typescriptlang.org/) in my examples, too. I like the idea behind it and that you'll catch bugs earlier and get a better auto-completion in editors. I think I tested TypeScript every year since its release in different projects and always hit a dead end somewhere. Be it the combination of JSX+TS+non-React-frameworks, old or false TypeScript definitions files, _another_ package manager just for type definitions called `tsd`, a GitHub API rate limit which prevents me from downloading more type definitions... Just recently TypeScript added a way to add type definitions to your `package.json` with a `typings` property. This could _kill_ `tsd` in the future... if just... I think TypeScript needs a loose mode which basically allows a module _without_ a `typings` property in `package.json` to export everything as an `any` type. That way we could get rid of `tsd` and gradually get better type checks, if module authors add `typings` to `package.json`. But for now you would just get missing import errors...
 
 All examples will be build with [webpack](https://webpack.github.io/). It is currently my favorite way to build applications.
 
@@ -137,7 +142,7 @@ module.exports = {
 };
 ```
 
-We place our source code in a folder called `src/` and our compiled app will be outputted in a folder called `dist/`. Our development server uses `dist/` as its base. The entry point of our app will be a file called `src/app.js`. All JavaScript files are loaded by Babel and we'll generate a ["cheap" Source Map](https://webpack.github.io/docs/configuration.html#devtool) (only preserving lines).
+We place our source code in a folder called `src/` and our compiled app will be outputted in a folder called `dist/`. Our development server uses `dist/` as its base. The entry point of our app will be a file called `src/app.js`. All JavaScript files are loaded by Babel and we'll generate a [Source Map](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/?redirect_from_locale=de).
 
 Alongside with our compiled JavaScript we generate a `src/index.html`. Its template looks like this:
 
@@ -560,7 +565,7 @@ Run `$ ws start` now and you see the _"Static conent."_.
 
 ## React
 
-At this time you would probably expect an introduction to Redux or freezer with a [flux-like architecture](https://medium.com/@arqex/react-the-simple-way-cabdf1f42f12). Both are needed to handle state changes in an application. Because we only look into static components for now we can focus on React and will introduce Redux and freezer at a later step.
+At this time you would probably expect an introduction to Redux, which is a framework for handling state changes in an application. Because we only look into static components for now - which don't have state changes - we can focus on React and will introduce Redux at a later step.
 
 First install `react` and `react-dom`:
 
@@ -886,7 +891,403 @@ Awesome! Thank you for reading so far and thank your self, too! You now have a v
 
 # Dynamic components
 
-TODO
+Before we move on: all of the future examples use the same `webpack.config.js`, `.babelrc` and `src/index.html` dependent on the frameworks as before. The directory structure is always very similar to the current structure, we just rename files or directories like `static-component` to `dynamic-component`, etc. Our dynamic components use this CSS file for all examples (`src/dynamic-component/dynamic-component.css`):
+
+```css
+.container {
+  background: #eee;
+  padding: 10px 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+```
+
+The goal of this example is to create a component which counts seconds starting with a random value between 1 and 100. We do that so we can create two instances of this component and see that they run independently.
+
+## Angular 1
+
+Our `src/app.js` is nearly unchanged. Just a little bit of renaming and we use our component two times:
+
+```javascript
+import angular from 'angular';
+import ngRoute from 'angular-route';
+import dynamicComponent from './dynamic-component';
+
+angular.module('example-app', [
+  ngRoute,
+  dynamicComponent
+]).config($routeProvider => {
+  $routeProvider.when('/', {
+    template: `
+      <dynamic-component></dynamic-component>
+      <dynamic-component></dynamic-component>
+    `
+  });
+});
+```
+
+And this is our new `<dynamic-component>` in `src/dynamic-component/index.js`:
+
+```javascript
+import angular from 'angular';
+import styles from './dynamic-component.css';
+
+export default angular.module('dynamic-component', []).directive('dynamicComponent', () => {
+  return {
+    scope: true,
+    controller($interval) {
+      this.seconds = Math.ceil(Math.random() * 100);
+      $interval(() => this.seconds++, 1000);
+    },
+    controllerAs: 'ctrl',
+    template: `<div class="${styles.container}">I count {{ ctrl.seconds }} seconds.</div>`
+  };
+}).name;
+```
+
+Let us break this down. First we set a `scope` property to `true`. This is Angulars way to say, that every `<dynamic-component>` will have its own unique state. If you omit this line every `<dynamic-component>` will show the same value, because they share the same state. After that we add a `controller` to our directive which will hold and manipulate the component state. We inject the `$interval` service (you remember [injection?](https://docs.angularjs.org/guide/di)) into the `controller`. `$interval` is a service offered by Angular itself. It is similar to the native `setInterval`, but will automatically update Angulars data-binding. The callback we pass to `$interval` will be called every `1000` ms and will count up the variable `this.seconds` with `this` being the `controller`. `this.seconds` is initialized with a random value between 1 and 100. After that we give the controller the name `ctrl` with `controllerAs`. This is need to access the `controller` in our `template`. We can now access our variable `this.seconds` inside our `template` with `{{ ctrl.seconds }}`. The `{{}}` notation is Angulars way to say _Every time `{{ ctrl.seconds }}` changes, re-render our `template`._
+
+## Angular 2
+
+Our `src/app.js` looks like this:
+
+```javascript
+import 'zone.js';
+import 'reflect-metadata';
+import { Component, View, bootstrap } from 'angular2/angular2';
+import DynamicComponent from './dynamic-component';
+
+class ExampleApp {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'example-app'
+      }),
+      new View({
+        directives: [ DynamicComponent ],
+        template: `
+          <dynamic-component></dynamic-component>
+          <dynamic-component></dynamic-component>
+        `
+      })
+    ];
+  }
+}
+
+bootstrap(ExampleApp);
+```
+
+Note that we imported [zone.js](https://github.com/angular/zone.js) in the first line. This is a dependency of Angular 2 so you should already have this installed. I think it is a little bit hard to explain what a Zone is. The docs say: _"A Zone is an execution context that persists across async tasks."_ What that means is, that we can use a regular `setInterval`, something which knows nothing about Angular 2 (and the other way around, too), but Angular 2 can determine when an async `setInterval` callback is executed thanks to a "safe execution context", so it can update its state. This happens automatically if import zone.js and use `setInterval`, so we don't need a specific service like `$interval`.
+
+Our `src/dynamic-component/index.js` looks like this:
+
+```javascript
+import { Component, View } from 'angular2/angular2';
+import styles from './dynamic-component.css';
+
+export default class DynamicComponent {
+  constructor() {
+    this.seconds = Math.ceil(Math.random() * 100);
+    setInterval(() => this.seconds++, 1000);
+  }
+
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'dynamic-component'
+      }),
+      new View({
+        template: `<div class="${styles.container}">I count {{ seconds }} seconds.</div>`
+      })
+    ];
+  }
+}
+```
+
+We use the `constructor` of our `DynamicComponent` `class` to specify our logic. This is basically what `controller` does in our Angular 1 example, but without `$interval`. We can than access our `this.seconds` variable in our template with `{{ seconds }}`. Note that Angular 2 doesn't use a `scope` concept anymore - every component has its own state by default.
+
+Call `$ npm start` and you see the seconds increment.
+
+## Ember
+
+Our `src/app.js` are nearly unchanged. We just need to rename all occurrences of `static` to `dynamic` and use `{{dynamic-component}}` twice in our `src/application.hbs`.
+
+This is our `src/dynamic-component/index.js`:
+
+```javascript
+import Ember from '../ember-shim';
+import template from './template.hbs';
+import styles from './dynamic-component.css';
+
+Ember.TEMPLATES['components/dynamic-component'] = template;
+export default Ember.Component.extend({
+  styles,
+  init() {
+    this._super(...arguments);
+    this.set('seconds', Math.ceil(Math.random() * 100));
+    this.count();
+  },
+  count() {
+    Ember.run.later(this, () => {
+      this.set('seconds', this.get('seconds') + 1);
+      this.count();
+    }, 1000);
+  }
+});
+```
+
+`init` is a special function which will be called automatically when our component will be created. [We need to call `this._super(...arguments);`](http://guides.emberjs.com/v1.10.0/object-model/classes-and-instances/#toc_initializing-instances) inside `init` to pass any `arguments` to `_super` which handles any default initialisation logic. We use `this.set` and `this.get` to write and read properties like `seconds` in our component. These are available, because we `extend` from `Ember.Component` and they notify Ember about our state changes. That way we can initialize `seconds` with a random value between 1 and 100. We also call `count` which does what you think: it counts up `seconds`. You'll notice that we use `Ember.run.later` instead of `setInterval` which is [recommended by the docs](http://emberjs.com/api/classes/Ember.run.html#method_later) to avoid any strange effects.
+
+Our `src/dynamic-component/template.hbs` looks like this:
+
+```handlebars
+<div class="{{styles.container}}">I count {{seconds}} seconds.</div>
+```
+
+## Cycle
+
+To handle multiple components more easily we install a small helper called [`combineLatestObj`](https://github.com/staltz/combineLatestObj).
+
+```bash
+$ npm install --save rx-combine-latest-obj
+```
+
+This will collect the most recent state of all components in one object, so we know, when we need to re-render our application. We use it like this in our `src/app.js`:
+
+```javascript
+/** @jsx hJSX */
+import { run } from '@cycle/core';
+import { makeDOMDriver, hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import combineLatestObj from 'rx-combine-latest-obj';
+import DynamicComponent from './dynamic-component';
+
+function main(sources) {
+  const componentVtrees$ = combineLatestObj({
+    dynamicComponent1$: DynamicComponent(sources).DOM,
+    dynamicComponent2$: DynamicComponent(sources).DOM
+  });
+  const vtree$ = componentVtrees$.map(vtrees => <div>
+    {vtrees.dynamicComponent1}
+    {vtrees.dynamicComponent2}
+  </div>);
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+As you can see `combineLatestObj` collects multiple streams and collects them in one object (here `componentVtrees$`). We then return a new single vtree via `componentVtrees$.map` every time a component changes its own vtree.
+
+This is our `src/dynamic-component/index.js`:
+
+```javascript
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import styles from './dynamic-component.css';
+
+export default function DynamicComponent(sources) {
+  const seconds$ = Observable.just(Math.ceil(Math.random() * 100))
+    .merge(Observable.interval(1000))
+    .scan(seconds => ++seconds);
+
+  const vtree$ = seconds$.map(seconds => <div className={styles.container}>
+    I count {seconds} seconds.
+  </div>);
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+As said earlier you'll writing more RxJS code in a Cycle application than Cycle-specific code itself. The hardest thing to understand in this code snippet is probably `seconds$` - especially if you never used observables before. First we create a new observable with just one random value between 1 and 100 (`Observable.just(Math.ceil(Math.random() * 100))`) than we create a second observable which is triggered every second (`Observable.interval(1000)`). The second observable is `merge`d into the first one. Now we have an observable with an initial value which can _do something_ every second. The _do_ part will be counting up which is done with `scan`. With `scan` we can operate on a _previous value_. E.g. we use our random start value and after a second we increment it. After another second we get our random start value which was incremented once and increment it again. Now it is incremented twice. This step is repeated every second and this stream of values is saved in `seconds$`. Now we produce new markup if `seconds$` gets a new value with `seconds$.map`.
+
+## Redux
+
+Finally we arrived at Redux. Probably the most popular framework in conjunction with React right now. Like Cycle Redux has a very unique way of designing an app. The code in the following example may seem a little bit verbose for displaying two random counters, but this approach really shines when your app grows.
+
+So, what do you need to know about Redux? Instead of declaring some components and set the state of each component separately, we declare the state _first_ and dependent on the state what components should be rendered. We also don't have a state for every component, but a _global_ state ("global" = inside one Redux application). This global state is called [_store_](http://redux.js.org/docs/basics/Store.html). But of course we don't want manage a big, complex single state for our application. With [_reducers_](http://redux.js.org/docs/basics/Reducers.html) we can manage only small slices of our store. They will update our state by creating _a new one_, because our state is [immutable](https://en.wikipedia.org/wiki/Immutable_object). That is important to keep in mind. We can't update an old state, we can only create a new one. This allows will give us nice [debugging features](https://github.com/gaearon/redux-devtools) and performance gains, because states can be compared by pointer references instead of by value. The reducers are triggered by dispatching [_actions_](http://redux.js.org/docs/basics/Actions.html).
+
+An action describes our state change. The reducer will make this change. The store holds the state. A reducer therefor has a very simple signature: it accepts a state and an action and returns a new state (`(state, action) -> newState`).
+
+While Redux is often used with React, it doesn't have to. It is a standalone framework to manage state in an app. But because React is only concerned about our view and not our state they complement each other very well. So take the [_React example for static components_](#react) and install Redux itself as well as a small helper package to use Redux more easily with React:
+
+```bash
+$ npm install --save redux react-redux
+```
+
+This our app skeleton in `src/app.js`:
+
+```javascript
+import React from 'react';
+import { render } from 'react-dom';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import reducers from './reducers';
+import ExampleApp from './example-app';
+
+const store = createStore(reducers);
+
+render(
+  <Provider store={store}>
+    <ExampleApp />
+  </Provider>,
+  document.getElementById('example-app')
+);
+```
+
+Uups! A bunch of things we've never seen. As said a store holds our application state. It is created with `createStore` (suprise!) and by passing our reducers, we'll soon look into. Don't forget: a reducer changes the state by creating a new one. The store is passed to a component called `<Provider>` offered by `react-redux`. With `<Provider>` we can access our store inside a child component no matter how deeply nested it is. One child component is `<ExampleApp />` which is a _smart container_. A smart container is a React component which knows about Redux and our store - they control a part of our view logic and are more coupled to our app. The other type of React component we'll use are _dumb component_ which don't know about Redux and our state and just render the data we give them. They aren't coupled to our app. You'll soon see a _dumb component_. Separating your app into _smart containers_ and _dumb containers_ is a very common concept in Redux application (and React in general). But note that this is a soft convention and these two types of React components are not strictly needed to create a Redux application. They just help you to organize your app. They can also overlap - you can have a React component which is _mostly_ smart, but also contains a little bit of _dumb_ rendering logic.
+
+Before we look into `<ExampleApp />` we'll look into our `reducers`, because as I said earlier the state determines what will be rendered.
+
+This is our `src/reducers.js`:
+
+```javascript
+import { combineReducers } from 'redux';
+import { INCREMENT_SECOND } from './constants';
+
+function randomSecond() {
+  return Math.ceil(Math.random() * 100);
+}
+
+const initialState = [ randomSecond(), randomSecond() ];
+
+function seconds(state = initialState, action) {
+  switch (action.type) {
+    case INCREMENT_SECOND:
+      return [
+        ...state.slice(0, action.index),
+        ++state[action.index],
+        ...state.slice(action.index + 1)
+      ];
+    default:
+      return state;
+  }
+}
+
+export default combineReducers({
+  seconds
+});
+```
+
+And the small `src/constants.js`:
+
+```javascript
+export const INCREMENT_SECOND = 'INCREMENT_SECOND';
+```
+
+`combineReducers` is a helper from Redux which allows us to augment multiple small reducers to a single one, because Redux expects a single reducer working on a single store. For our example we just create one reducers called `seconds` which will operate on a property called `seconds` on our store. We default `seconds` to `initialState` which is an array with two random values between 1 and 100. The reducer determines what to do with `action.type`. For now our reducer only knows one `action.type`: `INCREMENT_SECOND`. If an action with this type is encountered, we return a _new_ array of seconds (_new_ because our store is immutable) containing all seconds we allready have and incrementing the second value specified by `action.index`. (You'll soon see how the action itself is created.) If our reducer encounters an unknown `action.type` we just return the old state.
+
+I want to shortly explain this code snippet, if you're unfamiliar with ES2015:
+
+```javascript
+[
+  ...state.slice(0, action.index),
+  ++state[action.index],
+  ...state.slice(action.index + 1)
+];
+```
+
+This creates a new array (`[]`). It contains all values (`...`) from `0` to the index specified by `action.index` (`state.slice(0, action.index)`). It counts up one value specified at `action.index` (`++state[action.index]`). It contains all values (`...`) after `action.index` (`state.slice(action.index + 1)`).
+
+Now look into our `<ExampleApp />` specified in `src/example-app/index.js`:
+
+```javascript
+import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import DynamicComponent from '../dynamic-component';
+import { incrementSecond } from '../action-creators';
+
+class ExampleApp extends Component {
+  render() {
+    const { seconds, actions: { incrementSecond } } = this.props;
+    return (
+      <div>
+        {seconds.map((second, index) => (
+          <DynamicComponent
+            key={index}
+            index={index}
+            second={second}
+            incrementSecond={incrementSecond} />
+        ))}
+      </div>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  return {
+    seconds: state.seconds
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators({ incrementSecond }, dispatch)
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ExampleApp);
+```
+
+We create a new `ExampleApp` class extending from Reacts `Component`. It has a `render` function which will be called by React on state changes. This `render` function will create a `<div>` and two _dumb components_ called `<DynamicComponent />`. This component is dumb, because we pass _all data_ it needs to know directly into the component as properties. (Note that _key_ is a property [needed by React](https://facebook.github.io/react/docs/multiple-components.html#dynamic-children), not something we need for our application.) We pass `index` which will be the `action.index` we allready saw in our reducer. We pass `second` which is the value our `<DynamicComponent />` should render. And we pass `incrementSecond`. This is a function which will create an action and is therefor called an _action creator_.
+
+After our `ExampleApp` class you'll see two functions: `mapStateToProps` and `mapDispatchToProps`. Remember that we wrapped our `<ExampleApp>` in a `<Provider>` earlier? The `<Provider>` allows us to access our store in `<ExampleApp>`, but we want to control exactly what data can be accessed, because our store can become really big in a complex app. This is what `mapStateToProps` and `mapDispatchToProps` do. We can specify exactly what parts of the store can be accessed in our `<ExampleApp>`. In this case it is just `state.seconds` (see `mapStateToProps`). And we can specify which actions we want to eventually dispatch in our `<ExampleApp>`. In this case it is the `incrementSecond` action (see `mapDispatchToProps`). This mapping is `connect`ed with our `ExampleApp` class with the [`connect`](https://github.com/rackt/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options) helper offered by `react-redux` which makes our React `Component` aware of our Redux store.
+
+Our action creator is very simple (`src/action-creators.js`):
+
+```javascript
+import { INCREMENT_SECOND } from './constants';
+
+export function incrementSecond(index) {
+  return {
+    type: INCREMENT_SECOND,
+    index
+  }
+}
+```
+
+As said earlier an action creator is just a function returning an action and an action is just a simple JavaScript object. This object has a `type` by convention to identify it. In this case our `incrementSecond` action creator returns an action with the `type` set to `INCREMENT_SECOND`. It just has one other property `index`. With the `index` specified our reducer knows which second should be incremented. We allready saw that.
+
+There is just one missing piece now: our dumb component `<DynamicComponent>` created in `src/dynamic-component/index.html`.
+
+```javascript
+import React, { Component } from 'react';
+import styles from './dynamic-component.css';
+
+class DynamicComponent extends Component {
+  componentDidMount() {
+    const { incrementSecond, index } = this.props;
+    setInterval(() => incrementSecond(index), 1000);
+  }
+
+  render() {
+    const { second } = this.props;
+    return (
+      <div className={styles.container}>
+        I count {second} seconds.
+      </div>
+    )
+  }
+}
+
+export default DynamicComponent;
+```
+
+You'll notice that this component isn't `connect`ed with Redux by using `mapStateToProps` and `mapDispatchToProps`. This is a good indicator to distinguish _dumb components_ from _smart_ containers. The only interesting thing in this `DynamicComponent` class is `componentDidMount`. This is part of [Reacts lifecycle for `Component`s](https://facebook.github.io/react/docs/component-specs.html#mounting-componentdidmount) and it is called once when a `Component` was correctly setup (aka _mounted_, immediately after the first rendering). We call `setInterval` here to call `incrementSecond` every second. Because we passed `index` from our `<ExampleApp>` to our `<DynamicComponent>` earlier, we can now pass it to our action so our reducers know which second should be incremented.
+
+And this is our working Redux example! You can see it by running `$ npm start`. Again... this example may seem a little bit verbose, but it scales well to more complex ones. If you need more data on your store you create a new reducer which also sets a default value to your data. You can access this data in _smart containers_ which are basically React `Component`s `connect`ed to a Redux store. The data than is passed from _smart containers_ to _dumb components_ which are React `Component`s _not_ `connect`ed to a Redux store, so they can be rendered.
 
 # Interactive components
 
