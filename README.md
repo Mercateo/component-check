@@ -31,10 +31,10 @@ So what is a component? Let us keep the definition short and generic and treat t
 - [Introducing: JSX](#introducing-jsx)
 - [Introducing: CSS Modules](#introducing-css-modules)
 - [Dynamic components](#dynamic-components)
-  - [Angular 1](#angular-1)
-  - [Angular 2](#angular-2)
-  - [Ember](#ember)
-  - [Cycle.js](#cyclejs)
+  - [Angular 1](#angular-1-1)
+  - [Angular 2](#angular-2-1)
+  - [Ember](#ember-1)
+  - [Cycle.js](#cyclejs-1)
   - [Redux](#redux)
 
 # Goals
@@ -1044,7 +1044,7 @@ Our `src/dynamic-component/template.hbs` looks like this:
 <div class="{{styles.container}}">I count {{seconds}} seconds.</div>
 ```
 
-## Cycle
+## Cycle.js
 
 To handle multiple components more easily we install a small helper called [`combineLatestObj`](https://github.com/staltz/combineLatestObj).
 
