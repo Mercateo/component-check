@@ -14,7 +14,7 @@ _Note_: This is a _work-in-progress_ and don't forget that Angular 2 is still an
 I will not explain every framework in detail. I'll focus on creating components.
 I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented, because it doesn't support IE9 which is a requirement for our projects.
 
-So what is a component? Let us keep the definition short and generic and treat them as re-usable and composable pieces of HTML, CSS and/or JavaScript code mostly used for GUI elements.
+So what is a component? Let us keep the definition short and generic and treat them as reusable and composable pieces of HTML, CSS and/or JavaScript code mostly used for GUI elements.
 
 #Table of contents
 
@@ -329,7 +329,7 @@ If you want to start an Ember project do yourself a favor and use [ember-cli](ht
 
 Note: Ember will soon introduce angle brackets components, so you can write a component like this: `<static-component></static-component>`. I couldn't create a running example, because angle brackets components can only be used in canary builds of Ember. In these examples we use traditional curly braces components written as `{{static-component}}`. They will not just differ in syntax, but also in functionality. Angle brackets components will use one-way data-binding by default.
 
-Because Ember uses [Handlebars](http://handlebarsjs.com/) templates (or more precisely [HTMLBars](https://github.com/tildeio/htmlbars)) for views, we'll need to add a new loader to our `webpack.config.js`. (Note: This is exactly the job which ember-cli solves. You don't need to create your own build config. This is great! But if you want to re-use an existing build config as in our case, this can be troublesome.)
+Because Ember uses [Handlebars](http://handlebarsjs.com/) templates (or more precisely [HTMLBars](https://github.com/tildeio/htmlbars)) for views, we'll need to add a new loader to our `webpack.config.js`. (Note: This is exactly the job which ember-cli solves. You don't need to create your own build config. This is great! But if you want to reuse an existing build config as in our case, this can be troublesome.)
 
 First install [ember-templates-loader](https://github.com/shama/ember-templates-loader):
 
@@ -1291,16 +1291,381 @@ And this is our working Redux example! You can see it by running `$ npm start`. 
 
 # Interactive components
 
-TODO
+In our interactive components example we'll create a component containing two buttons and a value starting with `0`. A click on one button will decrement our value while a click on the other button will increment our value.
 
-# Configurable components
+We'll reuse the same CSS file, but rename it from `src/dynamic-component/dynamic-component.css` to `src/interactive-component/interactive-component.css`.
 
-TODO
+## Angular 1
+
+Our `src/app.js` is straightforward and nearly unchanged to the previous example. Just a little bit of renaming:
+
+```javascript
+import angular from 'angular';
+import ngRoute from 'angular-route';
+import interactiveComponent from './interactive-component';
+
+angular.module('example-app', [
+  ngRoute,
+  interactiveComponent
+]).config($routeProvider => {
+  $routeProvider.when('/', {
+    template: `
+      <interactive-component></interactive-component>
+      <interactive-component></interactive-component>
+    `
+  });
+});
+```
+
+This is how `<interactive-component>` is implemented in `src/interactive-component/index.js`:
+
+```javascript
+import angular from 'angular';
+import styles from './interactive-component.css';
+
+export default angular.module('interactive-component', []).directive('interactiveComponent', () => {
+  return {
+    scope: true,
+    controller() {
+      this.value = 0;
+      this.decrement = () => this.value--;
+      this.increment = () => this.value++;
+    },
+    controllerAs: 'ctrl',
+    template: `
+      <div class="${styles.container}">
+        <button ng-click="ctrl.decrement()">Decrement</button>
+        Current value: {{ ctrl.value }}
+        <button ng-click="ctrl.increment()">Increment</button>
+      </div>
+    `
+  };
+}).name;
+```
+
+This is very similar to our previous example. Inside our `controller` we initialize `this.value` with `0`. We also add two functions: `decrement` and `increment`. They will manipulate `this.value` accordingly. The interesting part is _how_ you call these functions. This is done on our two `<button>`s by using a special directive called `ng-click`, which is offered by Angular itself. This will call `decrement` or `increment` on every click and the state change is immediately reflected in our view.
+
+## Angular 2
+
+For Angular 2 the `src/app.js` is also nearly untouched:
+
+```javascript
+import 'zone.js';
+import 'reflect-metadata';
+import { Component, View, bootstrap } from 'angular2/angular2';
+import InteractiveComponent from './interactive-component';
+
+class ExampleApp {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'example-app'
+      }),
+      new View({
+        directives: [ InteractiveComponent ],
+        template: `
+          <interactive-component></interactive-component>
+          <interactive-component></interactive-component>
+        `
+      })
+    ];
+  }
+}
+
+bootstrap(ExampleApp);
+```
+
+And this is `<interactive-component>` in `src/interactive-component/index.js`:
+
+```javascript
+import { Component, View } from 'angular2/angular2';
+import styles from './interactive-component.css';
+
+export default class InteractiveComponent {
+  constructor() {
+    this.value = 0;
+    this.decrement = () => this.value--;
+    this.increment = () => this.value++;
+  }
+
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'interactive-component'
+      }),
+      new View({
+        template: `
+          <div class="${styles.container}">
+            <button (click)="decrement()">Decrement</button>
+            Current value: {{ value }}
+            <button (click)="increment()">Increment</button>
+          </div>
+        `
+      })
+    ];
+  }
+}
+```
+
+The `constructor` is identical to our `controller` in Angular 1. The difference is _how_ you call `decrement` and `increment`. In Angular 2 you no longer use a directive called `ng-click`. Event handling is more of a language feature now. To set a click handler in Angular 2 you use `(click)` on an element. _Yes_, this is valid HTML. If you don't like it you can use the alternative syntax `on-click`, but all official examples will use the canonical `(click)`.
+
+## Ember
+
+Again... `src/app.js` is also nearly untouched as well as `src/application.hbs`. I'll not write them again. Let's dive straight into `src/interactive-component/index.js`:
+
+```javascript
+import Ember from '../ember-shim';
+import template from './template.hbs';
+import styles from './interactive-component.css';
+
+Ember.TEMPLATES['components/interactive-component'] = template;
+export default Ember.Component.extend({
+  styles,
+  init() {
+    this._super(...arguments);
+    this.set('value', 0);
+  },
+  actions: {
+    decrement() {
+      this.set('value', this.get('value') - 1);
+    },
+    increment() {
+      this.set('value', this.get('value') + 1);
+    }
+  }
+});
+```
+
+We use `this.get` and `this.set` to read and write our `value`. The important part is, that our `decrement` and `increment` functions are methods on a special object called `actions`. This way we can use them with the `{{action}}` helper in our `src/interactive-component/template.hbs` template:
+
+```handlebars
+<div class="{{styles.container}}">
+  <button {{action "decrement"}}>Decrement</button>
+  Current value: {{value}}
+  <button {{action "increment"}}>Increment</button>
+</div>
+```
+
+## Cycle.js
+
+For Cycle.js our `src/app.js` is nearly unchanged, too. (Surprise!) Just the typical renaming of our component. But the component itself is totally restructered. First we need to install a new module called `cuid` which we use to identify a component with a unique ID. I also changed the directory and file structure to a more canonical pattern:
+
+```
+src/interactive-component/index.js
+src/interactive-component/intent.js
+src/interactive-component/model.js
+src/interactive-component/view.js
+```
+
+This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events (which is what we need `cuid` for to see _which_ component was clicked).
+
+To say it in different words: Check if element `Foo` was clicked (= intent) and if it was clicked change our state (= model), so the user sees a result (= view).
+
+That's also the reason why I introduce MVI in our interactive component example: no interaction, no intent.
+
+So how does it look like? See our `src/interactive-component/index.js`:
+
+```javascript
+import cuid  from 'cuid';
+import intent from './intent';
+import model from './model';
+import view from './view';
+
+export default function InteractiveComponent(sources) {
+  const id = cuid();
+
+  const actions = intent(sources, id);
+  const state$ = model(actions);
+  const vtree$ = view(state$, id);
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+This component skeleton will be very similar in all components you'll write in Cycle. We create a unique `id`. This `id` is passed alongside with the `sources` to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned es as an observable by `model`. We pass `state$` and `id` to our `view` to render our `state$` and use `id` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
+
+`src/interactive-component/intent.js` is the only real new concept here:
+
+```javascript
+export default function intent({ DOM }, id) {
+  return {
+    decrement$: DOM.select(`.${id}.decrement`).events('click').map(event => -1),
+    increment$: DOM.select(`.${id}.increment`).events('click').map(event => +1)
+  };
+}
+```
+
+As I said we query our `DOM` by events. This done with basic CSS selectors (`.${id}.decrement` and `.${id}.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+
+This is `src/interactive-component/model.js`:
+
+```javascript
+import { Observable } from 'rx';
+
+export default function model(actions) {
+  return Observable.just(0)
+    .merge(actions.decrement$)
+    .merge(actions.increment$)
+    .scan((value, delta) => value + delta);
+}
+```
+
+We just create a new `Observable` initialized with `0`. We than `merge` our two action streams `decrement$` and `increment$` into this other stream and increment or decrement the value accordingly (`.scan((value, delta) => value + delta)`).
+
+And this is `src/interactive-component/view.js`:
+
+```javascript
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import styles from './interactive-component.css';
+
+export default function view(state$, id) {
+  return state$.map(value =>
+    <div className={styles.container}>
+      <button className={`${id} decrement`}>Decrement</button>
+      &nbsp;
+      Current value: {value}
+      &nbsp;
+      <button className={`${id} increment`}>Increment</button>
+    </div>
+  );
+}
+```
+
+Nothing fancy here. Just be sure to use `${id}` a class names on your interactive elements. You'll also notice the use of `&nbsp;`. Because JSX normalizes whitespace differently than HTML, you need to explicitly declare a non-breaking space. (You can either see this as a benefit or downside of JSX. It is up to you.)
+
+## Redux
+
+`src/app.js` is completely unchanged. But we define two new action types in `src/constants.js`:
+
+```javascript
+export const DECREMENT = 'DECREMENT';
+export const INCREMENT = 'INCREMENT';
+```
+
+Our `src/action-creators.js` are updated accordingly:
+
+```javascript
+import { DECREMENT, INCREMENT } from './constants';
+
+export function decrement(index) {
+  return {
+    type: DECREMENT,
+    index
+  };
+}
+
+export function increment(index) {
+  return {
+    type: INCREMENT,
+    index
+  };
+}
+```
+
+Our `src/reducers.js` should look very similar to. We initialize our state as an array with two `0`s and act up on incoming `action`s.
+
+```javascript
+import { combineReducers } from 'redux';
+import { DECREMENT, INCREMENT } from './constants';
+
+const initialState = [ 0, 0 ];
+
+function values(state = initialState, action) {
+  switch (action.type) {
+    case DECREMENT:
+      return [
+        ...state.slice(0, action.index),
+        --state[action.index],
+        ...state.slice(action.index + 1)
+    ];
+    case INCREMENT:
+      return [
+        ...state.slice(0, action.index),
+        ++state[action.index],
+        ...state.slice(action.index + 1)
+    ];
+    default:
+      return state;
+  }
+}
+
+export default combineReducers({
+  values
+});
+```
+
+The `src/example-app/index.js` is also very similar to the previous example, besides we are managing two actions now:
+
+```javascript
+import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import InteractiveComponent from '../interactive-component';
+import { decrement, increment } from '../action-creators';
+
+class ExampleApp extends Component {
+  render() {
+    const { values, actions: { decrement, increment } } = this.props;
+    return (
+      <div>
+        {values.map((value, index) => (
+          <InteractiveComponent
+            key={index}
+            index={index}
+            value={value}
+            decrement={decrement}
+            increment={increment} />
+        ))}
+      </div>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  return {
+    values: state.values
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators({ decrement, increment }, dispatch)
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ExampleApp);
+```
+
+And this is our _dumb component_ `<InteractiveComponent />` in `src/interactive-component/index.js`:
+
+```javascript
+import React, { Component } from 'react';
+import styles from './interactive-component.css';
+
+class InteractiveComponent extends Component {
+  render() {
+    const { index, value, decrement, increment } = this.props;
+    return (
+      <div className={styles.container}>
+        <button onClick={() => decrement(index)}>Decrement</button>
+        &nbsp;
+        Current value: {value}
+        &nbsp;
+        <button onClick={() => increment(index)}>Increment</button>
+      </div>
+    )
+  }
+}
+
+export default InteractiveComponent;
+```
+
+The click hander is set by `onClick` which will just call `decrement` or `increment` (passed by `<ExampleApp />` to `<InteractiveComponent />`) passing an `index` to identify the component.
 
 # Composable components
-
-TODO
-
-# Transformable components
 
 TODO
