@@ -1,0 +1,3 @@
+export const ADD_SECOND = 'ADD_SECOND';
+export const REMOVE_SECOND = 'REMOVE_SECOND';
+export const INCREMENT_SECOND = 'INCREMENT_SECOND';

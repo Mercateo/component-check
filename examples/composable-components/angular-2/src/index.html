@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Angular 2 • composable components</title>
+
+  {% for (var css in o.htmlWebpackPlugin.files.css) { %}
+  <link href="{%= o.htmlWebpackPlugin.files.css[css] %}" rel="stylesheet">
+  {% } %}
+</head>
+<body>
+  <main><example-app>Loading...</example-app></main>
+
+  {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
+  <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>
+  {% } %}
+</body>
+</html>

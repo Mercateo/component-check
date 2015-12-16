@@ -36,6 +36,18 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [Ember](#ember-1)
   - [Cycle.js](#cyclejs-1)
   - [Redux](#redux)
+- [Interactive components](#interactive-components)
+  - [Angular 1](#angular-1-2)
+  - [Angular 2](#angular-2-2)
+  - [Ember](#ember-2)
+  - [Cycle.js](#cyclejs-2)
+  - [Redux](#redux-1)
+- [Composable components](#interactive-components)
+  - [Angular 1](#angular-1-3)
+  - [Angular 2](#angular-2-3)
+  - [Ember](#ember-3)
+  - [Cycle.js](#cyclejs-3)
+  - [Redux](#redux-2)
 
 # Goals
 
@@ -1581,13 +1593,13 @@ function values(state = initialState, action) {
         ...state.slice(0, action.index),
         --state[action.index],
         ...state.slice(action.index + 1)
-    ];
+      ];
     case INCREMENT:
       return [
         ...state.slice(0, action.index),
         ++state[action.index],
         ...state.slice(action.index + 1)
-    ];
+      ];
     default:
       return state;
   }

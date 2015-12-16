@@ -1,0 +1,8 @@
+<div class="{{styles.container}}">
+  <button {{action "addDynamicComponent"}}>Add dynamic component</button>
+  <hr />
+  {{#each ids as |id index|}}
+    {{dynamic-component}}
+    <button {{action "removeDynamicComponent" index}}>Remove dynamic component</button>
+  {{/each}}
+</div>
