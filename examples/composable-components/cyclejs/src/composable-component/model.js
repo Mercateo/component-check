@@ -2,14 +2,14 @@ import { Observable } from 'rx';
 
 export default function model({ addDynamicComponent$, removeDynamicComponent$ }) {
   return Observable.just([])
-    // map `addDynamicComponent$` values to a callback which adds `dynamicComponent` to existing `dynamicComponents`
+    // map `addDynamicComponent$` values to a callback which adds `vtree$` to existing `vtree$s`
     .merge(addDynamicComponent$.map(
-      dynamicComponent => dynamicComponents => [ ...dynamicComponents, dynamicComponent ]
+      vtree$ => vtree$s => [ ...vtree$s, vtree$ ]
     ))
-    // map `removeDynamicComponent$` values to a callback which removes the `dynamicComponent` matching the index
+    // map `removeDynamicComponent$` values to a callback which removes the `vtree` matching the index
     .merge(removeDynamicComponent$.map(
-      index => dynamicComponents => dynamicComponents.filter((_, i) => index !== i)
+      index => vtree$s => vtree$s.filter((_, i) => index !== i)
     ))
-    // call callback (either returned from `addDynamicComponent$` or `removeDynamicComponent$`) and pass `dynamicComponents`
-    .scan((dynamicComponents, callback) => callback(dynamicComponents));
+    // call callback (either returned from `addDynamicComponent$` or `removeDynamicComponent$`) and pass `vtree$s`
+    .scan((vtree$s, callback) => callback(vtree$s));
 }

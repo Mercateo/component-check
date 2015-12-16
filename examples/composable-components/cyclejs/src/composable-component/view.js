@@ -9,7 +9,7 @@ export default function view(state$, id) {
       <hr />
       {dynamicComponents.map((dynamicComponent, index) =>
         <div>
-          {dynamicComponent.DOM}
+          {dynamicComponent}
           <button value={index} className={`${id} removeDynamicComponent`}>Remove dynamic component</button>
           {index + 1 !== dynamicComponents.length ? <hr /> : null}
         </div>
