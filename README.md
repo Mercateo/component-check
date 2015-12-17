@@ -10,11 +10,11 @@ In this project I want to compare the usage and development of components in sev
 * [Cycle.js](http://cycle.js.org/)
 * [React](https://facebook.github.io/react/) with [Redux](http://redux.js.org/)
 
-_Note_: This is a _work-in-progress_ and don't forget that Angular 2 is still an alpha, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release.
-I will not explain every framework in detail. I'll focus on creating components.
-I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented, because it doesn't support IE9 which is a requirement for our projects.
+_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still an alpha, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release, so there is allways a little catch up game to play. We are in JS land, right?
 
-So what is a component? Let us keep the definition short and generic and treat them as reusable and composable pieces of HTML, CSS and/or JavaScript code mostly used for GUI elements.
+_Note 2_: I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented and a good candidate for this comparison, because it doesn't support IE9 which is a requirement for our projects.
+
+So what is a component? Let us keep the definition short and generic and treat them as reusable and composable pieces of HTML, CSS and/or JavaScript code which are mostly used for GUI elements.
 
 #Table of contents
 
@@ -48,12 +48,13 @@ So what is a component? Let us keep the definition short and generic and treat t
   - [Ember](#ember-3)
   - [Cycle.js](#cyclejs-3)
   - [Redux](#redux-2)
+- [Conclusion](#conclusion)
 
 # Goals
 
-- compare the usage and development of the same components written in the frameworks mentioned above
-- find _universal skeletons_ for components
-- find a common tooling around these frameworks
+- compare how components are written in the frameworks mentioned above
+- find generic skeletons and patterns for components
+- battle test a single tooling against these frameworks
 
 # Usage
 
@@ -1680,4 +1681,650 @@ The click hander is set by `onClick` which will just call `decrement` or `increm
 
 # Composable components
 
-TODO
+In our last example we build a complex widget composed out of two components. One will be our `<dynamic-component>` which we'll slightly adapt and the other one will be `<composable-component>` which will be a little bit like `<interactive-component>`, but instead of decrementing or incrementing a counter we'll add or remove instances of `<dynamic-component>`. Because `<dynamic-component>` can be destroyed at runtime I'll show you how to clean-up your component correctly. In this case we'll need to cancel our interval correctly. I also remove the random start value from `<dynamic-component>` and just start at 0 seconds.
+
+`<composable-component>` will use this CSS style. It looks very similar to the `container` class we used earlier, just with a different `background`. That way you can easily distinguish the `<dynamic-component>` instances inside `<composable-component>`. You'll also see that the styles won't clash with each even though both use `container` as a class name. Thank you CSS modules! 💕
+
+```css
+.container {
+  background: #ddd;
+  padding: 10px 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+```
+
+## Angular 1
+
+Let us start by look into our `src/app.js`. Nothing interesting so far:
+
+```javascript
+import angular from 'angular';
+import ngRoute from 'angular-route';
+import composableComponent from './composable-component';
+
+angular.module('example-app', [
+  ngRoute,
+  composableComponent
+]).config($routeProvider => {
+  $routeProvider.when('/', {
+    template: `
+      <composable-component></composable-component>
+    `
+  });
+});
+```
+
+The interesting part is our `src/composable-component/index.js`:
+
+```javascript
+import angular from 'angular';
+import dynamicComponent from '../dynamic-component';
+import styles from './composable-component.css';
+
+var id = 0;
+
+export default angular.module('composable-component', [
+  dynamicComponent
+]).directive('composableComponent', () => {
+  return {
+    scope: true,
+    controller() {
+      this.ids = [];
+      this.removeDynamicComponent = (index) => this.ids.splice(index, 1);
+      this.addDynamicComponent = () => this.ids.push(id++);
+    },
+    controllerAs: 'ctrl',
+    template: `
+      <div class="${styles.container}">
+        <button ng-click="ctrl.addDynamicComponent()">Add dynamic component</button>
+        <hr>
+        <div ng-repeat="id in ctrl.ids">
+          <dynamic-component></dynamic-component>
+          <button ng-click="ctrl.removeDynamicComponent($index)">Remove dynamic component</button>
+          <hr ng-if="!$last">
+        </div>
+      </div>
+    `
+  };
+}).name;
+```
+
+As said earlier we want to add and remove instances of `<dynamic-component>`. To do that we need a way to display a component multiple times in a dynamic way. This is typically done with a directive called `ng-repeat` which repeat the element on which it is used _n_-times. Sadly we can't tell `ng-repeat` _directly_ to run _n_-times, but instead use an array with the length of _n_. For [performance reasons](https://docs.angularjs.org/api/ng/directive/ngRepeat) `ng-repeat` needs a way to track the values in the array. The default behavior of `ng-repeat` to do this is to _not_ allow duplicated values in our array. So we create a new `id` for every `<dynamic-component>` which is added. This `id` is saved in an array called `ids`. You can see how this is done in the `controller`. `ng-repeat` can now use this array like this: `ng-repeat="id in ctrl.ids"`.
+
+Inside `ng-repeat` we have access to multiple special variables. Two of them are `$index` which behaves exactly like an index inside a `[].map` function and the other one is `$last` which is a boolean to indicate if the last component is currently rendered. We pass `$index` to our `removeDynamicComponent` function declared in our `controller` so we know which component should be removed. We use `$last` to place a `<hr>` between every `<dynamic-component>` _except_ the last one. This is done with another directive called `ng-if`. If you pass a _truthy_ value to `ng-if` the element on which it is used will be rendered. If the value is _falsy_ the element will not be placed inside the DOM. It looks like this: `<hr ng-if="!$last">`.
+
+But don't forget to look inside `src/dynamic-component/index.js`:
+
+```diff
+import angular from 'angular';
+import styles from './dynamic-component.css';
+
+export default angular.module('dynamic-component', []).directive('dynamicComponent', () => {
+  return {
+    scope: true,
+-    controller($interval) {
+-      this.seconds = Math.ceil(Math.random() * 100);
+-      $interval(() => this.seconds++, 1000);
++    controller($interval, $scope) {
++      this.seconds = 0;
++      const intervalId = $interval(() => this.seconds++, 1000);
++      $scope.$on('$destroy', () => $interval.cancel(intervalId));
+    },
+    controllerAs: 'ctrl',
+    template: `
+      <div class="${styles.container}">I count {{ ctrl.seconds }} seconds.</div>
+    `
+  };
+}).name;
+```
+
+We inject the `$scope` object into our `controller` which holds our state. A special event called `$destroy` is triggered on this object when our component is removed, so we can do some clean-up work. When calling `$interval` an `intervalId` is returned. If this `intervalId` is passed to `$interval.cancel` the interval will be correctly canceled, so our seconds aren't counted forever without anyone seeing them.
+
+Congratulate yourself! You've created a complex component in Angular 1.
+
+## Angular 2
+
+Again `src/app.js` hasn't changed much:
+
+```javascript
+import 'zone.js';
+import 'reflect-metadata';
+import { Component, View, bootstrap } from 'angular2/angular2';
+import ComposableComponent from './composable-component';
+
+class ExampleApp {
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'example-app'
+      }),
+      new View({
+        directives: [ ComposableComponent ],
+        template: `
+          <composable-component></composable-component>
+        `
+      })
+    ];
+  }
+}
+
+bootstrap(ExampleApp);
+```
+
+This is our `src/composable-component/index.js`:
+
+```javascript
+import { Component, View } from 'angular2/angular2';
+import DynamicComponent from '../dynamic-component';
+import styles from './composable-component.css';
+
+var id = 0;
+
+export default class ComposableComponent {
+  constructor() {
+    this.ids = [];
+    this.removeDynamicComponent = (index) => this.ids.splice(index, 1);
+    this.addDynamicComponent = () => this.ids.push(id++);
+  }
+
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'composable-component'
+      }),
+      new View({
+        directives: [ DynamicComponent ],
+        template: `
+        <div class="${styles.container}">
+          <button (click)="addDynamicComponent()">Add dynamic component</button>
+          <hr>
+          <div *ng-for="#id of ids; #$index = index, #$last = last">
+            <dynamic-component></dynamic-component>
+            <button (click)="removeDynamicComponent($index)">Remove dynamic component</button>
+            <hr *ng-if="!$last">
+          </div>
+        </div>
+        `
+      })
+    ];
+  }
+}
+```
+
+This component is similar to the Angular 1 version, but the build-in directives like `ng-repeat` and `ng-if` have slightly changed. `ng-repeat` is now called `ng-for` and you don't pass a value like `foo in foos`, but `#foo of foos`. This matches the [for-of loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) used in JavaScript. The `#` is needed to create a new local variable. You can also use `$index` and `$last` with `ng-for`, but they aren't accessible by default like in Angular 1. You explicitly say to use them which allows you to rename them, if you like: `#$index = index, #$last = last`. Again `#` is needed to create the variables. The last gotcha is an `*` before `ng-for`. This is needed to mark this part of the template as dynamic. The same is needed for `ng-if`, because it is dynamic, too. (Sometimes a `<hr>` is placed in the DOM, sometimes not.)
+
+```diff
+-<div ng-repeat="id in ctrl.ids">
++<div *ng-for="#id of ids; #$index = index, #$last = last">
+
+-<hr ng-if="!$last">
++<hr *ng-if="!$last">
+```
+
+Now look into `src/dynamic-component/index.js`:
+
+```diff
+import { Component, View } from 'angular2/angular2';
+import styles from './dynamic-component.css';
+
+export default class DynamicComponent {
+  constructor() {
+-    this.seconds = Math.ceil(Math.random() * 100);
+-    setInterval(() => this.seconds++, 1000);
++    this.seconds = 0;
++    this.intervalId = setInterval(() => this.seconds++, 1000);
+  }
+
++  onDestroy() {
++    clearInterval(this.intervalId);
++  }
+
+  static get annotations() {
+    return [
+      new Component({
+        selector: 'dynamic-component'
+      }),
+      new View({
+        template: `<div class="${styles.container}">I count {{ seconds }} seconds.</div>`
+      })
+    ];
+  }
+}
+```
+
+We learned earlier that Angular 2 doesn't use scopes anymore, so we don't have a `$scope` object on which a `$destroy` event could be triggered. Instead we just declare a `onDestroy` method on our `DynamicComponent` which will be automatically called, when `<dynamic-component>` is removed from the DOM. Because we don't use `$interval` in Angular 2, we use JavaScripts native methods to cancel the interval.
+
+## Ember
+
+Don't forget to register both components in `src/app.js`:
+
+```javascript
+import Ember from './ember-shim';
+import applicationTemplate from './application.hbs';
+import ComposableComponent from './composable-component';
+import DynamicComponent from './dynamic-component';
+
+// register templates
+Ember.TEMPLATES.application = applicationTemplate;
+
+const ExampleApp = Ember.Application.create({
+  ready() {
+    document.getElementById('example-app').remove();
+  }
+});
+
+// register components
+ExampleApp.DynamicComponentComponent = DynamicComponent;
+ExampleApp.ComposableComponentComponent = ComposableComponent;
+```
+
+This is `src/composable-component/index.js` and `src/composable-component/template.hbs`:
+
+```javascript
+import Ember from '../ember-shim';
+import template from './template.hbs';
+import styles from './composable-component.css';
+
+var id = 0;
+
+Ember.TEMPLATES['components/composable-component'] = template;
+export default Ember.Component.extend({
+  styles,
+  init() {
+    this._super(...arguments);
+    this.set('ids', []);
+  },
+  actions: {
+    removeDynamicComponent(index) {
+      this.set('ids', this.get('ids').filter((_, i) => index !== i));
+    },
+    addDynamicComponent() {
+      this.set('ids', [ ...this.get('ids'), id++ ]);
+    }
+  }
+});
+```
+
+```handlebars
+<div class="{{styles.container}}">
+  <button {{action "addDynamicComponent"}}>Add dynamic component</button>
+  <hr />
+  {{#each ids as |id index|}}
+    {{dynamic-component}}
+    <button {{action "removeDynamicComponent" index}}>Remove dynamic component</button>
+  {{/each}}
+</div>
+```
+
+We create an `ids` array here, very similar to the Angular examples, but using Embers `get` and `set` helper. The `removeDynamicComponent` and `addDynamicComponent` methods are added to `actions` again.
+
+We use the build-in Handlebars plugin `{{#each}}` to loop over the `ids` array. Like Angular we can access an `index` inside `{{#each}}{{/each}}`. Sadly there is no equivalent to `$last` in Ember. While there is a build-in `{{#if}}` Handlebars plugin, we can't do calculations like `index + 1 === ids.lenght` inside it which would mirror the `$last` variable. To be honest... I couldn't find an easy way to conditionally show the `<hr>` in Ember. If _you_, dear reader, know an easy way to do this, write me.
+
+One additional thing to notice is the way params are passed to `action` handlers: `{{action "removeDynamicComponent" index}}`.
+
+Now to the changes in `src/dynamic-component/index.js`:
+
+```diff
+import Ember from '../ember-shim';
+import template from './template.hbs';
+import styles from './dynamic-component.css';
+
+Ember.TEMPLATES['components/dynamic-component'] = template;
+export default Ember.Component.extend({
+  styles,
+  init() {
+    this._super(...arguments);
+-    this.set('seconds', Math.ceil(Math.random() * 100));
++    this.set('seconds', 0);
+    this.count();
+  },
+  count() {
+    Ember.run.later(this, () => {
++      if (!this.isDestroyed) {
+        this.set('seconds', this.get('seconds') + 1);
+        this.count();
++      }
+    }, 1000);
+  }
+});
+```
+
+We haven't used `setInterval` in Ember, but `Ember.run.later`. I don't think it is possible to cancel the callback, so we need to check if our component was destroyed with `if (!this.isDestroyed)`, before we make changes in our state and call `count` again.
+
+## Cycle.js
+
+Our `src/app.js`:
+
+```javascript
+/** @jsx hJSX */
+import { run } from '@cycle/core';
+import { makeDOMDriver, hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import combineLatestObj from 'rx-combine-latest-obj';
+import ComposableComponent from './composable-component';
+
+function main(sources) {
+  const componentVtrees$ = combineLatestObj({
+    composableComponent$: ComposableComponent(sources).DOM
+  });
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+      {vtrees.composableComponent}
+    </div>
+  );
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+Now the `src/composable-component/index.js` with its `./intent.js`, `./model.js` and `./view.js`:
+
+```javascript
+import cuid  from 'cuid';
+import intent from './intent';
+import model from './model';
+import view from './view';
+
+export default function ComposableComponent(sources) {
+  const id = cuid();
+
+  const actions = intent(sources, id);
+  const state$ = model(actions);
+  const vtree$ = view(state$, id);
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+```javascript
+import DynamicComponent from '../dynamic-component';
+
+export default function intent(sources, id) {
+  return {
+    addDynamicComponent$: sources.DOM.select(`.${id}.addDynamicComponent`)
+      .events('click')
+      .map(() => DynamicComponent(sources).DOM),
+    removeDynamicComponent$: sources.DOM.select(`.${id}.removeDynamicComponent`)
+      .events('click')
+      .map(event => parseInt(event.target.value))
+  };
+}
+```
+
+```javascript
+import { Observable } from 'rx';
+
+export default function model({ addDynamicComponent$, removeDynamicComponent$ }) {
+  return Observable.just([])
+    // map `addDynamicComponent$` values to a callback which adds `vtree$` to existing `vtree$s`
+    .merge(addDynamicComponent$.map(
+      vtree$ => vtree$s => [ ...vtree$s, vtree$ ]
+    ))
+    // map `removeDynamicComponent$` values to a callback which removes the `vtree` matching the index
+    .merge(removeDynamicComponent$.map(
+      index => vtree$s => vtree$s.filter((_, i) => index !== i)
+    ))
+    // call callback (either returned from `addDynamicComponent$` or `removeDynamicComponent$`) and pass `vtree$s`
+    .scan((vtree$s, callback) => callback(vtree$s));
+}
+```
+
+```javascript
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import styles from './composable-component.css';
+
+export default function view(state$, id) {
+  return state$.map(dynamicComponents =>
+    <div className={styles.container}>
+      <button className={`${id} addDynamicComponent`}>Add dynamic component</button>
+      <hr />
+      {dynamicComponents.map((dynamicComponent, index) =>
+        <div>
+          {dynamicComponent}
+          <button value={index} className={`${id} removeDynamicComponent`}>Remove dynamic component</button>
+          {index + 1 !== dynamicComponents.length ? <hr /> : null}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+This is quite complex. I'll try to break it down. The `sources` are passed to `intent`. We query the `DOM` for `click` events on `.${id}.addDynamicComponent` and `.${id}.removeDynamicComponent` to generate the streams `addDynamicComponent$` and `removeDynamicComponent$`. `addDynamicComponent$` contains a new `vtree$` of a `DynamicComponent` for every click (`DynamicComponent(sources).DOM`) while `removeDynamicComponent$` contains the `index` parsed with `parseInt(event.target.value)` from the clicked element.
+
+The two `actions` are than passed to our `model`. We basically want our `state$` to be an array containing all `vtree$`s of our `DynamicComponent`s. It is an array containing streams, that's why I called it `vtree$s`. (A stream containing an array would be `foos$` and a stream containing other streams would be `foo$$`, just to make things clearer by using conventions.) We `merge` `addDynamicComponent$` and `removeDynamicComponent$` into our `state$` - but not directly! Instead the return (with `map`) a callback function to add a new `vtree$` to our `vtree$s` array or to remove a `vtree$` from our `vtree$s` array. These callbacks are used inside `scan`, which passes `vtree$s` (initialized as an empty array) to the `callback` (which is either the `callback` from `addDynamicComponent$` or `removeDynamicComponent$`).
+
+The usage in the `view` is simple. We just `map` over our array (`dynamicComponents`) and place the `vtree$`s (`{dynamicComponent}`) in our virtual DOM.
+
+Note that we conditionally dislay the `<hr />` between every `DynamicComponent` in this line: `{index + 1 !== dynamicComponents.length ? <hr /> : null}`.
+
+The changes to `src/dynamic-component/index.js` are a little bit more complicated this time. Thank you @laszlokorte for helping me here.
+
+```diff
+/** @jsx hJSX */
+import { hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
+import styles from './dynamic-component.css';
+
+export default function DynamicComponent(sources) {
+-  const seconds$ = Observable.just(Math.ceil(Math.random() * 100))
+-    .merge(Observable.interval(1000))
+-    .scan(seconds => ++seconds);
+
++  const timer$ = Observable.timer(0, 1000).publish();
++  timer$.connect();
+
++  const seconds$ = timer$.shareReplay(1).scan(seconds => ++seconds);
+
+  const vtree$ = seconds$.map(seconds =>
+    <div className={styles.container}>
+      I count {seconds} seconds.
+    </div>
+  );
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+```
+
+A concept of observables I haven't explained are _hot_ and _cold_ observables. _Hot_ observables produce values even if no one is subscribed on them. _Cold_ observables produce values only if someone has subscribed on them. An observable is cold by _default_. The way we handle our `vtree$`s leads to a re-subscription every time we add or remove a `DynamcComponent`. (I don't fully understand _why_ this happens. I only know _that_ it happens and what it implies.) Because of this re-subscription every `DynamcComponent` would be reset to
+`0`, if we add or remove a `DynamcComponent`. So we need a _hot_ observable. This done with `publish` and `connect` on a separate observable I called `timer$` which produces a new value every second. With `shareReplay` the same sequence of emitted values will be shared even if the subscripion happens _after_ the first values have been emitted. That way our `DynamcComponent` won't be reset to `0` even after a re-subscription.
+
+## Redux
+
+Our `src/app.js` is untouched. Let's start by looking into `src/constants.js` in which our action types are defined. They should be self-explanatory:
+
+```javascript
+export const ADD_SECOND = 'ADD_SECOND';
+export const REMOVE_SECOND = 'REMOVE_SECOND';
+export const INCREMENT_SECOND = 'INCREMENT_SECOND';
+```
+
+Our `src/action-creators.js`. Also pretty straightforward:
+
+```javascript
+import { ADD_SECOND, REMOVE_SECOND, INCREMENT_SECOND } from './constants';
+
+export function addSecond(index) {
+  return {
+    type: ADD_SECOND
+  };
+}
+
+export function removeSecond(index) {
+  return {
+    type: REMOVE_SECOND,
+    index
+  };
+}
+
+export function incrementSecond(index) {
+  return {
+    type: INCREMENT_SECOND,
+    index
+  };
+}
+```
+
+And the `src/reducers.js`:
+
+```javascript
+import { combineReducers } from 'redux';
+import { ADD_SECOND, REMOVE_SECOND, INCREMENT_SECOND } from './constants';
+
+const initialState = [];
+
+function seconds(state = initialState, action) {
+  switch (action.type) {
+    case ADD_SECOND:
+      return [ ...state, 0 ];
+    case REMOVE_SECOND:
+      return state.filter((_, i) => action.index !== i);
+    case INCREMENT_SECOND:
+      return [
+        ...state.slice(0, action.index),
+        ++state[action.index],
+        ...state.slice(action.index + 1)
+      ];
+    default:
+      return state;
+  }
+}
+
+export default combineReducers({
+  seconds
+});
+```
+
+Nothing fancy so far. All in all we have a state containing an array called `seconds` which is initially empty. On an `ADD_SECOND` action we'll add a new value to `seconds` which is `0` by default. Seconds can be incremented on `INCREMENT_SECOND` or removed on `REMOVE_SECOND` with a given `index`.
+
+This time the `src/example-app/index.js` is extremely simple, because all the logic is placed in our `<ComposableComponent />`:
+
+```javascript
+import React, { Component } from 'react';
+import ComposableComponent from '../composable-component';
+
+class ExampleApp extends Component {
+  render() {
+    return (
+      <ComposableComponent />
+    );
+  }
+}
+
+export default ExampleApp;
+```
+
+This is `src/composable-component/index.js`:
+
+```javascript
+import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import DynamicComponent from '../dynamic-component';
+import * as actionCreators from '../action-creators';
+import styles from './composable-component.css';
+
+class ComposableComponent extends Component {
+  render() {
+    const { seconds, actions: { addSecond, removeSecond, incrementSecond } } = this.props;
+    return (
+      <div className={styles.container}>
+        <button onClick={() => addSecond()}>Add dynamic component</button>
+        <hr />
+        {seconds.map((second, index) => (
+          <div key={index}>
+            <DynamicComponent
+              index={index}
+              second={second}
+              incrementSecond={incrementSecond} />
+            <button onClick={() => removeSecond(index)}>Remove dynamic component</button>
+            {index + 1 !== seconds.length ? <hr /> : null}
+          </div>
+        ))}
+      </div>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  return {
+    seconds: state.seconds
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators(actionCreators, dispatch)
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ComposableComponent);
+```
+
+Many things are happening here, but it is not that different from `<ExampleApp />` actually. With `mapStateToProps` we say that `ComposableComponent` wants to read `seconds` in our state and with `mapDispatchToProps` we say that `ComposableComponent` wants to access all `actionCreators`. We `map` over `seconds` in the `render` function to create `<DynamicComponent />` instances and pass all properties it needs.
+
+And this is `src/dynamic-component/index.js`:
+
+```diff
+import React, { Component } from 'react';
+import styles from './dynamic-component.css';
+
+class DynamicComponent extends Component {
+  componentDidMount() {
+    const { incrementSecond, index } = this.props;
+-    setInterval(() => incrementSecond(index), 1000);
++    this.intervalId = setInterval(() => incrementSecond(index), 1000);
+  }
+
++  componentWillUnmount() {
++    clearInterval(this.intervalId);
++  }
+
+  render() {
+    const { second } = this.props;
+    return (
+      <div className={styles.container}>
+        I count {second} seconds.
+      </div>
+    )
+  }
+}
+
+export default DynamicComponent;
+```
+
+This is really the only new part for Redux (or more precisely React) in this example. To clear your interval you add a method called `componentWillUnmount` to your `Component`. It will be called shortly before your `Component` will be destroyed.
+
+Wow! Great. We actually finished all of our examples.
+
+# Conclusion
+
+So what is the best framework to write components? No, really. I ask _you_. What do you think is the best framework? It probably depends a lot on your projects and your experience. I can't make a recommendation for you. Don't forget that these are very small examples. I know from own experiences how hard managing state in Angular 1 components gets as your app grows. This is actually the number one reason why I look into other frameworks. We didn't looked into many important parts of writing components like testability, animations, i18n, etc. It is not possible to look _deeply_ into ever framework. But by now you should have a good overview how it could be to write bigger components in one of our frameworks.
+
+Thank you for reading.
+
+I hope you learned something. I did! And I'll conclude with what _I_ learned:
+- I like TypeScript, but I can't integrate it easily in my daily workflow. I hope this changes in the future.
+- I like webpack, Babel and CSS modules. Really good for building applications!
+- I still prefer JSX, but it wouldn't be mandatory for me.
+- Angular 1 in ES6 isn't _that_ bad.
+- Angular 2 is okay. I'm not entirely sold to its concepts and syntax. `zone.js` seems a little bit magical.
+- You can write Ember applications without ember-cli! This is really nice. But it has edges...
+- Cycle.js is conceptionally maybe the best framework currently. "Best" in the sense of bug free, testability and logical structure. But for me it is _really_ hard to write and understand. To hard actually. I hope this changes in the future, too.
+- React and Redux were nice to use. A little bit verbose in the beginning, but very readable. I will look more into Redux in the future, because it was the framework I was most productive with.

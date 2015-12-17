@@ -25,7 +25,7 @@ export default class ComposableComponent {
           <div *ng-for="#id of ids; #$index = index, #$last = last">
             <dynamic-component></dynamic-component>
             <button (click)="removeDynamicComponent($index)">Remove dynamic component</button>
-            <hr *ng-if="$last">
+            <hr *ng-if="!$last">
           </div>
         </div>
         `
