@@ -900,7 +900,7 @@ import styles from './static-component.css';
 +export default () => <p className={styles.p}>Static content.</p>;
 ```
 
-Awesome! Thank you for reading so far and thank your self, too! You now have a very nice setup for creating great components. We can now move on to examples showing you how to create more complex components.
+Awesome! Thank you for reading so far and thank yourself, too! You now have a very nice setup for creating great components. We can now move on to examples showing you how to create more complex components.
 
 # Dynamic components
 
@@ -1017,7 +1017,7 @@ export default class DynamicComponent {
 }
 ```
 
-We use the `constructor` of our `DynamicComponent` `class` to specify our logic. This is basically what `controller` does in our Angular 1 example, but without `$interval`. We can than access our `this.seconds` variable in our template with `{{ seconds }}`. Note that Angular 2 doesn't use a `scope` concept anymore - every component has its own state by default.
+We use the `constructor` of our `DynamicComponent` `class` to specify our logic. This is basically what `controller` does in our Angular 1 example, but without `$interval`. We can then access our `this.seconds` variable in our template with `{{ seconds }}`. Note that Angular 2 doesn't use a `scope` concept anymore - every component has its own state by default.
 
 Call `$ npm start` and you see the seconds increment.
 
@@ -1131,7 +1131,7 @@ Finally we arrived at Redux. Probably the most popular framework in conjunction 
 
 So, what do you need to know about Redux? Instead of declaring some components and set the state of each component separately, we declare the state _first_ and dependent on the state what components should be rendered. We also don't have a state for every component, but a _global_ state ("global" = inside one Redux application). This global state is called [_store_](http://redux.js.org/docs/basics/Store.html). But of course we don't want manage a big, complex single state for our application. With [_reducers_](http://redux.js.org/docs/basics/Reducers.html) we can manage only small slices of our store. They will update our state by creating _a new one_, because our state is [immutable](https://en.wikipedia.org/wiki/Immutable_object). That is important to keep in mind. We can't update an old state, we can only create a new one. This allows will give us nice [debugging features](https://github.com/gaearon/redux-devtools) and performance gains, because states can be compared by pointer references instead of by value. The reducers are triggered by dispatching [_actions_](http://redux.js.org/docs/basics/Actions.html).
 
-An action describes our state change. The reducer will make this change. The store holds the state. A reducer therefor has a very simple signature: it accepts a state and an action and returns a new state (`(state, action) -> newState`).
+An action describes our state change. The reducer will make this change. The store holds the state. A reducer therefore has a very simple signature: it accepts a state and an action and returns a new state (`(state, action) -> newState`).
 
 While Redux is often used with React, it doesn't have to. It is a standalone framework to manage state in an app. But because React is only concerned about our view and not our state they complement each other very well. So take the [_React example for static components_](#react) and install Redux itself as well as a small helper package to use Redux more easily with React:
 
@@ -1159,7 +1159,7 @@ render(
 );
 ```
 
-Uups! A bunch of things we've never seen. As said a store holds our application state. It is created with `createStore` (suprise!) and by passing our reducers, we'll soon look into. Don't forget: a reducer changes the state by creating a new one. The store is passed to a component called `<Provider>` offered by `react-redux`. With `<Provider>` we can access our store inside a child component no matter how deeply nested it is. One child component is `<ExampleApp />` which is a _smart container_. A smart container is a React component which knows about Redux and our store - they control a part of our view logic and are more coupled to our app. The other type of React component we'll use are _dumb component_ which don't know about Redux and our state and just render the data we give them. They aren't coupled to our app. You'll soon see a _dumb component_. Separating your app into _smart containers_ and _dumb containers_ is a very common concept in Redux application (and React in general). But note that this is a soft convention and these two types of React components are not strictly needed to create a Redux application. They just help you to organize your app. They can also overlap - you can have a React component which is _mostly_ smart, but also contains a little bit of _dumb_ rendering logic.
+Uups! A bunch of things we've never seen. As said a store holds our application state. It is created with `createStore` (surprise!) and by passing our reducers, we'll soon look into. Don't forget: a reducer changes the state by creating a new one. The store is passed to a component called `<Provider>` offered by `react-redux`. With `<Provider>` we can access our store inside a child component no matter how deeply nested it is. One child component is `<ExampleApp />` which is a _smart container_. A smart container is a React component which knows about Redux and our store - they control a part of our view logic and are more coupled to our app. The other type of React component we'll use are _dumb component_ which don't know about Redux and our state and just render the data we give them. They aren't coupled to our app. You'll soon see a _dumb component_. Separating your app into _smart containers_ and _dumb containers_ is a very common concept in Redux application (and React in general). But note that this is a soft convention and these two types of React components are not strictly needed to create a Redux application. They just help you to organize your app. They can also overlap - you can have a React component which is _mostly_ smart, but also contains a little bit of _dumb_ rendering logic.
 
 Before we look into `<ExampleApp />` we'll look into our `reducers`, because as I said earlier the state determines what will be rendered.
 
@@ -1199,7 +1199,7 @@ And the small `src/constants.js`:
 export const INCREMENT_SECOND = 'INCREMENT_SECOND';
 ```
 
-`combineReducers` is a helper from Redux which allows us to augment multiple small reducers to a single one, because Redux expects a single reducer working on a single store. For our example we just create one reducers called `seconds` which will operate on a property called `seconds` on our store. We default `seconds` to `initialState` which is an array with two random values between 1 and 100. The reducer determines what to do with `action.type`. For now our reducer only knows one `action.type`: `INCREMENT_SECOND`. If an action with this type is encountered, we return a _new_ array of seconds (_new_ because our store is immutable) containing all seconds we allready have and incrementing the second value specified by `action.index`. (You'll soon see how the action itself is created.) If our reducer encounters an unknown `action.type` we just return the old state.
+`combineReducers` is a helper from Redux which allows us to augment multiple small reducers to a single one, because Redux expects a single reducer working on a single store. For our example we just create one reducer called `seconds` which will operate on a property called `seconds` on our store. We default `seconds` to `initialState` which is an array with two random values between 1 and 100. The reducer determines what to do with `action.type`. For now our reducer only knows one `action.type`: `INCREMENT_SECOND`. If an action with this type is encountered, we return a _new_ array of seconds (_new_ because our store is immutable) containing all seconds we already have and incrementing the second value specified by `action.index`. (You'll soon see how the action itself is created.) If our reducer encounters an unknown `action.type` we just return the old state.
 
 I want to shortly explain this code snippet, if you're unfamiliar with ES2015:
 
@@ -1461,7 +1461,7 @@ We use `this.get` and `this.set` to read and write our `value`. The important pa
 
 ## Cycle.js
 
-For Cycle.js our `src/app.js` is nearly unchanged, too. (Surprise!) Just the typical renaming of our component. But the component itself is totally restructered. First we need to install a new module called `cuid` which we use to identify a component with a unique ID. I also changed the directory and file structure to a more canonical pattern:
+For Cycle.js our `src/app.js` is nearly unchanged, too. (Surprise!) Just the typical renaming of our component. But the component itself is totally restructured. First we need to install a new module called `cuid` which we use to identify a component with a unique ID. I also changed the directory and file structure to a more canonical pattern:
 
 ```
 src/interactive-component/index.js
@@ -1498,7 +1498,7 @@ export default function InteractiveComponent(sources) {
 }
 ```
 
-This component skeleton will be very similar in all components you'll write in Cycle. We create a unique `id`. This `id` is passed alongside with the `sources` to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned es as an observable by `model`. We pass `state$` and `id` to our `view` to render our `state$` and use `id` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
+This component skeleton will be very similar in all components you'll write in Cycle. We create a unique `id`. This `id` is passed alongside with the `sources` to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned as an observable by `model`. We pass `state$` and `id` to our `view` to render our `state$` and use `id` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
 
 `src/interactive-component/intent.js` is the only real new concept here:
 
@@ -1526,7 +1526,7 @@ export default function model(actions) {
 }
 ```
 
-We just create a new `Observable` initialized with `0`. We than `merge` our two action streams `decrement$` and `increment$` into this other stream and increment or decrement the value accordingly (`.scan((value, delta) => value + delta)`).
+We just create a new `Observable` initialized with `0`. We then `merge` our two action streams `decrement$` and `increment$` into this other stream and increment or decrement the value accordingly (`.scan((value, delta) => value + delta)`).
 
 And this is `src/interactive-component/view.js`:
 
@@ -1579,7 +1579,7 @@ export function increment(index) {
 }
 ```
 
-Our `src/reducers.js` should look very similar to. We initialize our state as an array with two `0`s and act up on incoming `action`s.
+Our `src/reducers.js` should look very similar too. We initialize our state as an array with two `0`s and act up on incoming `action`s.
 
 ```javascript
 import { combineReducers } from 'redux';
@@ -1683,7 +1683,7 @@ The click hander is set by `onClick` which will just call `decrement` or `increm
 
 In our last example we build a complex widget composed out of two components. One will be our `<dynamic-component>` which we'll slightly adapt and the other one will be `<composable-component>` which will be a little bit like `<interactive-component>`, but instead of decrementing or incrementing a counter we'll add or remove instances of `<dynamic-component>`. Because `<dynamic-component>` can be destroyed at runtime I'll show you how to clean-up your component correctly. In this case we'll need to cancel our interval correctly. I also remove the random start value from `<dynamic-component>` and just start at 0 seconds.
 
-`<composable-component>` will use this CSS style. It looks very similar to the `container` class we used earlier, just with a different `background`. That way you can easily distinguish the `<dynamic-component>` instances inside `<composable-component>`. You'll also see that the styles won't clash with each even though both use `container` as a class name. Thank you CSS modules! 💕
+`<composable-component>` will use this CSS style. It looks very similar to the `container` class we used earlier, just with a different `background`. That way you can easily distinguish the `<dynamic-component>` instances inside `<composable-component>`. You'll also see that the styles won't clash with each other even though both use `container` as a class name. Thank you CSS modules! 💕
 
 ```css
 .container {
@@ -1750,7 +1750,7 @@ export default angular.module('composable-component', [
 }).name;
 ```
 
-As said earlier we want to add and remove instances of `<dynamic-component>`. To do that we need a way to display a component multiple times in a dynamic way. This is typically done with a directive called `ng-repeat` which repeat the element on which it is used _n_-times. Sadly we can't tell `ng-repeat` _directly_ to run _n_-times, but instead use an array with the length of _n_. For [performance reasons](https://docs.angularjs.org/api/ng/directive/ngRepeat) `ng-repeat` needs a way to track the values in the array. The default behavior of `ng-repeat` to do this is to _not_ allow duplicated values in our array. So we create a new `id` for every `<dynamic-component>` which is added. This `id` is saved in an array called `ids`. You can see how this is done in the `controller`. `ng-repeat` can now use this array like this: `ng-repeat="id in ctrl.ids"`.
+As said earlier we want to add and remove instances of `<dynamic-component>`. To do that we need a way to display a component multiple times in a dynamic way. This is typically done with a directive called `ng-repeat` which repeats the element on which it is used _n_-times. Sadly we can't tell `ng-repeat` _directly_ to run _n_-times, but instead use an array with the length of _n_. For [performance reasons](https://docs.angularjs.org/api/ng/directive/ngRepeat) `ng-repeat` needs a way to track the values in the array. The default behavior of `ng-repeat` to do this is to _not_ allow duplicated values in our array. So we create a new `id` for every `<dynamic-component>` which is added. This `id` is saved in an array called `ids`. You can see how this is done in the `controller`. `ng-repeat` can now use this array like this: `ng-repeat="id in ctrl.ids"`.
 
 Inside `ng-repeat` we have access to multiple special variables. Two of them are `$index` which behaves exactly like an index inside a `[].map` function and the other one is `$last` which is a boolean to indicate if the last component is currently rendered. We pass `$index` to our `removeDynamicComponent` function declared in our `controller` so we know which component should be removed. We use `$last` to place a `<hr>` between every `<dynamic-component>` _except_ the last one. This is done with another directive called `ng-if`. If you pass a _truthy_ value to `ng-if` the element on which it is used will be rendered. If the value is _falsy_ the element will not be placed inside the DOM. It looks like this: `<hr ng-if="!$last">`.
 
@@ -1852,7 +1852,7 @@ export default class ComposableComponent {
 }
 ```
 
-This component is similar to the Angular 1 version, but the build-in directives like `ng-repeat` and `ng-if` have slightly changed. `ng-repeat` is now called `ng-for` and you don't pass a value like `foo in foos`, but `#foo of foos`. This matches the [for-of loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) used in JavaScript. The `#` is needed to create a new local variable. You can also use `$index` and `$last` with `ng-for`, but they aren't accessible by default like in Angular 1. You explicitly say to use them which allows you to rename them, if you like: `#$index = index, #$last = last`. Again `#` is needed to create the variables. The last gotcha is an `*` before `ng-for`. This is needed to mark this part of the template as dynamic. The same is needed for `ng-if`, because it is dynamic, too. (Sometimes a `<hr>` is placed in the DOM, sometimes not.)
+This component is similar to the Angular 1 version, but the built-in directives like `ng-repeat` and `ng-if` have slightly changed. `ng-repeat` is now called `ng-for` and you don't pass a value like `foo in foos`, but `#foo of foos`. This matches the [for-of loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) used in JavaScript. The `#` is needed to create a new local variable. You can also use `$index` and `$last` with `ng-for`, but they aren't accessible by default like in Angular 1. You explicitly say to use them which allows you to rename them, if you like: `#$index = index, #$last = last`. Again `#` is needed to create the variables. The last gotcha is an `*` before `ng-for`. This is needed to mark this part of the template as dynamic. The same is needed for `ng-if`, because it is dynamic, too. (Sometimes a `<hr>` is placed in the DOM, sometimes not.)
 
 ```diff
 -<div ng-repeat="id in ctrl.ids">
@@ -1959,7 +1959,7 @@ export default Ember.Component.extend({
 
 We create an `ids` array here, very similar to the Angular examples, but using Embers `get` and `set` helper. The `removeDynamicComponent` and `addDynamicComponent` methods are added to `actions` again.
 
-We use the build-in Handlebars plugin `{{#each}}` to loop over the `ids` array. Like Angular we can access an `index` inside `{{#each}}{{/each}}`. Sadly there is no equivalent to `$last` in Ember. While there is a build-in `{{#if}}` Handlebars plugin, we can't do calculations like `index + 1 === ids.lenght` inside it which would mirror the `$last` variable. To be honest... I couldn't find an easy way to conditionally show the `<hr>` in Ember. If _you_, dear reader, know an easy way to do this, write me.
+We use the built-in Handlebars plugin `{{#each}}` to loop over the `ids` array. Like Angular we can access an `index` inside `{{#each}}{{/each}}`. Sadly there is no equivalent to `$last` in Ember. While there is a built-in `{{#if}}` Handlebars plugin, we can't do calculations like `index + 1 === ids.length` inside it which would mirror the `$last` variable. To be honest... I couldn't find an easy way to conditionally show the `<hr>` in Ember. If _you_, dear reader, know an easy way to do this, write me.
 
 One additional thing to notice is the way params are passed to `action` handlers: `{{action "removeDynamicComponent" index}}`.
 
@@ -2142,8 +2142,8 @@ export default function DynamicComponent(sources) {
 }
 ```
 
-A concept of observables I haven't explained are _hot_ and _cold_ observables. _Hot_ observables produce values even if no one is subscribed on them. _Cold_ observables produce values only if someone has subscribed on them. An observable is cold by _default_. The way we handle our `vtree$`s leads to a re-subscription every time we add or remove a `DynamcComponent`. (I don't fully understand _why_ this happens. I only know _that_ it happens and what it implies.) Because of this re-subscription every `DynamcComponent` would be reset to
-`0`, if we add or remove a `DynamcComponent`. So we need a _hot_ observable. This done with `publish` and `connect` on a separate observable I called `timer$` which produces a new value every second. With `shareReplay` the same sequence of emitted values will be shared even if the subscripion happens _after_ the first values have been emitted. That way our `DynamcComponent` won't be reset to `0` even after a re-subscription.
+A concept of observables I haven't explained are _hot_ and _cold_ observables. _Hot_ observables produce values even if no one is subscribed on them. _Cold_ observables produce values only if someone has subscribed on them. An observable is cold by _default_. The way we handle our `vtree$`s leads to a re-subscription every time we add or remove a `DynamicComponent`. (I don't fully understand _why_ this happens. I only know _that_ it happens and what it implies.) Because of this re-subscription every `DynamicComponent` would be reset to
+`0`, if we add or remove a `DynamicComponent`. So we need a _hot_ observable. This done with `publish` and `connect` on a separate observable I called `timer$` which produces a new value every second. With `shareReplay` the same sequence of emitted values will be shared even if the subscripion happens _after_ the first values have been emitted. That way our `DynamicComponent` won't be reset to `0` even after a re-subscription.
 
 ## Redux
 
@@ -2326,5 +2326,5 @@ I hope you learned something. I did! And I'll conclude with what _I_ learned:
 - Angular 1 in ES6 isn't _that_ bad.
 - Angular 2 is okay. I'm not entirely sold to its concepts and syntax. `zone.js` seems a little bit magical.
 - You can write Ember applications without ember-cli! This is really nice. But it has edges...
-- Cycle.js is conceptionally maybe the best framework currently. "Best" in the sense of bug free, testability and logical structure. But for me it is _really_ hard to write and understand. To hard actually. I hope this changes in the future, too.
+- Cycle.js is conceptionally maybe the best framework currently. "Best" in the sense of bug free, testability and logical structure. But for me it is _really_ hard to write and understand. Too hard actually. I hope this changes in the future, too.
 - React and Redux were nice to use. A little bit verbose in the beginning, but very readable. I will look more into Redux in the future, because it was the framework I was most productive with.
