@@ -58,7 +58,7 @@ So what is a component? Let us keep the definition short and generic and treat t
 
 # Usage
 
-I'll create an example for every component and every framework. You'll need to install the dependencies for these examples with `$ npm install`. You can than run an example with `$ npm start` and open [http://localhost:8080/](http://localhost:8080/) in your browser.
+I'll create an example for every component and every framework. You'll need to install the dependencies for these examples with `$ npm install`. You can then run an example with `$ npm start` and open [http://localhost:8080/](http://localhost:8080/) in your browser.
 
 # A word about tooling
 
@@ -70,7 +70,7 @@ We'll compile JSX with [Babel](https://babeljs.io/) which also offers us the opp
 
 I really tried to use [TypeScript](http://www.typescriptlang.org/) in my examples, too. I like the idea behind it and that you'll catch bugs earlier and get a better auto-completion in editors. I think I tested TypeScript every year since its release in different projects and always hit a dead end somewhere. Be it the combination of JSX+TS+non-React-frameworks, old or false TypeScript definitions files, _another_ package manager just for type definitions called `tsd`, a GitHub API rate limit which prevents me from downloading more type definitions... Just recently TypeScript added a way to add type definitions to your `package.json` with a `typings` property. This could _kill_ `tsd` in the future... if just... I think TypeScript needs a loose mode which basically allows a module _without_ a `typings` property in `package.json` to export everything as an `any` type. That way we could get rid of `tsd` and gradually get better type checks, if module authors add `typings` to `package.json`. But for now you would just get missing import errors...
 
-All examples will be build with [webpack](https://webpack.github.io/). It is currently my favorite way to build applications.
+All examples will be built with [webpack](https://webpack.github.io/). It is currently my favorite way to build applications.
 
 Webpack allows the usage of [CSS Modules](https://github.com/css-modules/css-modules) which will keep us safe from global CSS class name clashes. Again... I don't recommend to use CSS Modules for your own projects (at least for now), but as this is a research project and I want to learn more about CSS Modules I'll use them here.
 
@@ -96,13 +96,13 @@ And we need a small config file called `.babelrc` for Babel, so it uses the ES20
 }
 ```
 
-Of course we need to install webpack now to use this loader. Alongside with webpack we install [webpack-dev-server](https://github.com/webpack/webpack-dev-server). This server serves our app (suprise) and reloads the browser, if a code change is detected.
+Of course we need to install webpack now to use this loader. Alongside with webpack we install [webpack-dev-server](https://github.com/webpack/webpack-dev-server). This server serves our app (surprise) and reloads the browser, if a code change is detected.
 
 ```bash
 $ npm install --save-dev webpack webpack-dev-server
 ```
 
-To use the modules we add two commands to our `package.json` in the `"scrips"` property:
+To use the modules we add two commands to our `package.json` in the `"scripts"` property:
 
 ```json
 {
@@ -155,7 +155,7 @@ module.exports = {
 };
 ```
 
-We place our source code in a folder called `src/` and our compiled app will be outputted in a folder called `dist/`. Our development server uses `dist/` as its base. The entry point of our app will be a file called `src/app.js`. All JavaScript files are loaded by Babel and we'll generate a [Source Map](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/?redirect_from_locale=de).
+We place our source code in a folder called `src/` and our compiled app will be output in a folder called `dist/`. Our development server uses `dist/` as its base. The entry point of our app will be a file called `src/app.js`. All JavaScript files are loaded by Babel and we'll generate a [Source Map](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/?redirect_from_locale=de).
 
 Alongside with our compiled JavaScript we generate a `src/index.html`. Its template looks like this:
 
@@ -180,7 +180,7 @@ Alongside with our compiled JavaScript we generate a `src/index.html`. Its templ
 
 ## Angular 1
 
-Let's start with a static component. I'll show examples in the order how the frameworks are mention at the beginning of this article. That means we'll start with Angular 1 which _of course_ deviates from our generic setup I just introduced. 😉
+Let's start with a static component. I'll show examples in the order the frameworks are mentioned at the beginning of this article. That means we'll start with Angular 1 which _of course_ deviates from our generic setup I just introduced. 😉
 
 Inside our `src/index.html` you must change one line:
 
@@ -189,7 +189,7 @@ Inside our `src/index.html` you must change one line:
 +<main ng-app="example-app"><ng-view>Loading...</ng-view></main>
 ```
 
-This is needed because the entry point for an Angular application is defined with the `ng-app` attribute and a application name like `example-app` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
+This is needed because the entry point for an Angular application is defined with the `ng-app` attribute and an application name like `example-app` as its value. You'll also see the `<ng-view>` element. Both - the `ng-app` attribute and `<ng-view>` element - are so-called [_directives_](https://docs.angularjs.org/guide/directive), which is how components are called in Angular. `ng-app` comes with Angular core module, `<ng-view>` from the [angular-route](https://docs.angularjs.org/api/ngRoute) module. For a seasoned Angular developer it could look like overkill to use angular-route in this basic example which I need to show the entry template/view which holds our components (an easier way could be the [ng-include](https://docs.angularjs.org/api/ng/directive/ngInclude) directive), but I think this example can be easier compared to the other frameworks in that way.
 Now we need to install Angular 1 and angular-route:
 
 ```bash
@@ -386,7 +386,7 @@ module.exports = {
 };
 ```
 
-Now we will install Ember itself. Sadly Ember is the only framework in this list, which doesn't use npm officialy. However we can use the build created for Bower by using the tarball directly:
+Now we will install Ember itself. Sadly Ember is the only framework in this list, which doesn't use npm officially. However we can use the build created for Bower by using the tarball directly:
 
 ```bash
 $ npm install --save https://github.com/components/ember/tarball/2.2.0
@@ -477,7 +477,7 @@ Call `$ npm start` now. _"Loading..."_ disappears and _"Static content."_ is ren
 
 ## Cycle.js
 
-Cycle.js is a framework which introduces several concepts which deviate from the MVC frameworks from the last year. I recommend to read the [documentation of Cycle.js](http://cycle.js.org/) before you start, because I can't explain them here in detail. It is is a relatively small framework so you don't have to learn a lot of code, but you need to learn a new paradigm to write a good Cycle application.
+Cycle.js is a framework which introduces several concepts which deviate from the MVC frameworks from the last year. I recommend to read the [documentation of Cycle.js](http://cycle.js.org/) before you start, because I can't explain them here in detail. It is a relatively small framework so you don't have to learn a lot of code, but you need to learn a new paradigm to write a good Cycle application.
 
 I'll try to break down the general idea:
 
@@ -524,9 +524,9 @@ We create a `main` function and a `drivers` object. Both are passed to `run`. Th
   const vtree$ = Observable.just(vtree);
 ```
 
-As we work soly on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead the function `h` allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `h('div')` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
+As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead the function `h` allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `h('div')` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
 
-If you run `$ ws start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quit powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
+If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quite powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
 
 Create a file `src/static-component/index.js`:
 
@@ -574,7 +574,7 @@ run(main, drivers);
 
 We import `StaticComponent` and create a new component by calling it. We then `map` over `staticComponent.DOM` which will be called every time our markup changes (which is just _once_, because it is a static component) and place our virtual DOM from the component into a `<div>`.
 
-Run `$ ws start` now and you see the _"Static conent."_.
+Run `$ npm start` now and you see the _"Static content."_.
 
 ## React
 
