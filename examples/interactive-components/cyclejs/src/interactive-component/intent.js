@@ -1,6 +1,6 @@
-export default function intent({ DOM }, id) {
+export default function intent({ DOM }) {
   return {
-    decrement$: DOM.select(`.${id}.decrement`).events('click').map(event => -1),
-    increment$: DOM.select(`.${id}.increment`).events('click').map(event => +1)
+    decrement$: DOM.select('.decrement').events('click').map(event => -1),
+    increment$: DOM.select('.increment').events('click').map(event => +1)
   };
 }

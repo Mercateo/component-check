@@ -10,10 +10,14 @@ function main(sources) {
     dynamicComponent1$: DynamicComponent(sources).DOM,
     dynamicComponent2$: DynamicComponent(sources).DOM
   });
-  const vtree$ = componentVtrees$.map(vtrees => <div>
-    {vtrees.dynamicComponent1}
-    {vtrees.dynamicComponent2}
-  </div>);
+
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+      {vtrees.dynamicComponent1}
+      {vtrees.dynamicComponent2}
+    </div>
+  );
+
   const sinks = {
     DOM: vtree$
   };

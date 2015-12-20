@@ -5,8 +5,8 @@
     "build": "webpack"
   },
   "dependencies": {
-    "@cycle/core": "^5.0.1",
-    "@cycle/dom": "^7.1.1",
+    "@cycle/core": "6.0.0-rc2",
+    "@cycle/dom": "8.0.0-rc9",
     "rx": "^4.0.7"
   },
   "devDependencies": {

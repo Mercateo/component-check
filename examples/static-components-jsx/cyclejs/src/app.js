@@ -6,7 +6,7 @@ import StaticComponent from './static-component';
 
 function main(sources) {
   const staticComponent = StaticComponent(sources);
-  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
+  const vtree$ = staticComponent.DOM.map(staticVTree => <div>{staticVTree}</div>);
   const sinks = {
     DOM: vtree$
   };

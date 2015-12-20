@@ -498,11 +498,11 @@ This time we don't need to change our `src/index.html`. We can look directly int
 
 ```javascript
 import { run } from '@cycle/core';
-import { makeDOMDriver, h } from '@cycle/dom';
+import { makeDOMDriver, div } from '@cycle/dom';
 import { Observable } from 'rx';
 
 function main(sources) {
-  const vtree = h('div');
+  const vtree = div();
   const vtree$ = Observable.just(vtree);
   const sinks = {
     DOM: vtree$
@@ -520,11 +520,11 @@ run(main, drivers);
 We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to out `DOM` driver instance as explained earlier. But what is this?:
 
 ```javascript
-  const vtree = h('div');
+  const vtree = div();
   const vtree$ = Observable.just(vtree);
 ```
 
-As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead the function `h` allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `h('div')` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
+As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead we the function `div` (or `h2`, `h3`, `ul`, `li`, etc, each corresponding to their respective DOM elements) which allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `div()` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
 
 If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quite powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
 
@@ -535,10 +535,10 @@ import { h } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
-  const vtree = h('p', 'Static content.');
-  const vtree$ = Observable.just(vtree);
   const sinks = {
-    DOM: vtree$
+    DOM: Observable.just(
+      p('Static content.')
+    )
   };
   return sinks;
 }
@@ -555,10 +555,10 @@ import { Observable } from 'rx';
 +import StaticComponent from './static-component';
 
 function main(sources) {
--  const vtree = h('div');
+-  const vtree = div();
 -  const vtree$ = Observable.just(vtree);
 +  const staticComponent = StaticComponent(sources);
-+  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
++  const vtree$ = staticComponent.DOM.map(staticVTree => div(staticVTree));
   const sinks = {
     DOM: vtree$
   };
@@ -690,16 +690,16 @@ Our `src/static-component/index.js` now looks like this:
 
 ```diff
 +/** @jsx hJSX */
--import { h } from '@cycle/dom';
+-import { p } from '@cycle/dom';
 +import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
--  const vtree = h('p', 'Static content.');
-+  const vtree = <p>Static content.</p>;
-  const vtree$ = Observable.just(vtree);
   const sinks = {
-    DOM: vtree$
+    DOM: Observable.just(
+-      p('Static content.')
++      <p>Static content.</p>
+    )
   };
   return sinks;
 }
@@ -710,15 +710,15 @@ And this our `src/app.js`:
 ```diff
 +/** @jsx hJSX */
 import { run } from '@cycle/core';
--import { makeDOMDriver, h } from '@cycle/dom';
+-import { makeDOMDriver, div } from '@cycle/dom';
 +import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import StaticComponent from './static-component';
 
 function main(sources) {
   const staticComponent = StaticComponent(sources);
--  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
-+  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
+-  const vtree$ = staticComponent.DOM.map(staticVTree => h('div', staticVTree));
++  const vtree$ = staticComponent.DOM.map(staticVTree => <div>{staticVTree}</div>);
   const sinks = {
     DOM: vtree$
   };
@@ -877,14 +877,14 @@ This is Cycle and its `src/static-component/index.js`:
 /** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
-import styles from './static-component.css';
++import styles from './static-component.css';
 
 export default function StaticComponent(sources) {
--  const vtree = <p>Static content.</p>;
-+  const vtree = <p className={styles.p}>Static content.</p>;
-  const vtree$ = Observable.just(vtree);
   const sinks = {
-    DOM: vtree$
+    DOM: Observable.just(
+-      <p>Static content.</p>
++      <p className={styles.p}>Static content.</p>
+    )
   };
   return sinks;
 }
@@ -1080,10 +1080,14 @@ function main(sources) {
     dynamicComponent1$: DynamicComponent(sources).DOM,
     dynamicComponent2$: DynamicComponent(sources).DOM
   });
-  const vtree$ = componentVtrees$.map(vtrees => <div>
-    {vtrees.dynamicComponent1}
-    {vtrees.dynamicComponent2}
-  </div>);
+
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+      {vtrees.dynamicComponent1}
+      {vtrees.dynamicComponent2}
+    </div>
+  );
+
   const sinks = {
     DOM: vtree$
   };
@@ -1108,22 +1112,23 @@ import { Observable } from 'rx';
 import styles from './dynamic-component.css';
 
 export default function DynamicComponent(sources) {
-  const seconds$ = Observable.just(Math.ceil(Math.random() * 100))
-    .merge(Observable.interval(1000))
+  const seconds$ = Observable.interval(1000)
+    .startWith(Math.ceil(Math.random() * 100))
     .scan(seconds => ++seconds);
 
-  const vtree$ = seconds$.map(seconds => <div className={styles.container}>
-    I count {seconds} seconds.
-  </div>);
+  const vtree$ = seconds$.map(seconds =>
+    <div className={styles.container}>
+      I count {seconds} seconds.
+    </div>
+  );
 
-  const sinks = {
+  return {
     DOM: vtree$
   };
-  return sinks;
 }
 ```
 
-As said earlier you'll writing more RxJS code in a Cycle application than Cycle-specific code itself. The hardest thing to understand in this code snippet is probably `seconds$` - especially if you never used observables before. First we create a new observable with just one random value between 1 and 100 (`Observable.just(Math.ceil(Math.random() * 100))`) than we create a second observable which is triggered every second (`Observable.interval(1000)`). The second observable is `merge`d into the first one. Now we have an observable with an initial value which can _do something_ every second. The _do_ part will be counting up which is done with `scan`. With `scan` we can operate on a _previous value_. E.g. we use our random start value and after a second we increment it. After another second we get our random start value which was incremented once and increment it again. Now it is incremented twice. This step is repeated every second and this stream of values is saved in `seconds$`. Now we produce new markup if `seconds$` gets a new value with `seconds$.map`.
+As said earlier you'll be writing more RxJS code in a Cycle application than Cycle-specific code itself. The hardest thing to understand in this code snippet is probably `seconds$` - especially if you never used observables before. First we create an observable which is triggered every second (`Observable.interval(1000)`), then we prepend to it a random number between 1 and 100 (`.startWith(Math.ceil(Math.random() * 100))`). Now we have an observable with an initial value which can _do something_ every second. The _do_ part will be counting up which is done with `scan`. With `scan` we can operate on a _previous value_. E.g. we use our random start value and after a second we increment it. After another second we get our random start value which was incremented once and increment it again. Now it is incremented twice. This step is repeated every second and this stream of values is saved in `seconds$`. Now we produce new markup if `seconds$` gets a new value with `seconds$.map`.
 
 ## Redux
 
@@ -1461,7 +1466,51 @@ We use `this.get` and `this.set` to read and write our `value`. The important pa
 
 ## Cycle.js
 
-For Cycle.js our `src/app.js` is nearly unchanged, too. (Surprise!) Just the typical renaming of our component. But the component itself is totally restructured. First we need to install a new module called `cuid` which we use to identify a component with a unique ID. I also changed the directory and file structure to a more canonical pattern:
+For Cycle.js our `src/app.js` is nearly unchanged, too. Other than the typical renaming of our component, we also introduced a new module, `@cycle/isolate`. This will keep our component instances independent to each other, as we will see.
+
+```diff
+/** @jsx hJSX */
+import { run } from '@cycle/core';
+import { makeDOMDriver, hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
++import isolate from '@cycle/isolate';
+import combineLatestObj from 'rx-combine-latest-obj';
+-import DynamicComponent from './dynamic-component';
++import InteractiveComponent from './interactive-component';
+
+function main(sources) {
+  const componentVtrees$ = combineLatestObj({
+-    dynamicComponent1$: DynamicComponent(sources).DOM,
+-    dynamicComponent2$: DynamicComponent(sources).DOM
++    interactiveComponent1$: isolate(InteractiveComponent)(sources).DOM,
++    interactiveComponent2$: isolate(InteractiveComponent)(sources).DOM
+  });
+
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+-      {vtrees.dynamicComponent1}
+-      {vtrees.dynamicComponent2}
++      {vtrees.interactiveComponent1}
++      {vtrees.interactiveComponent2}
+    </div>
+  );
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+`isolate(Component)` takes a `Component` function and returns a new component function, which is now "isolated". What isolation means will make sense later on when we capture user events.
+
+The component itself is totally restructured. I changed the directory and file structure to a more canonical pattern:
 
 ```
 src/interactive-component/index.js
@@ -1470,7 +1519,7 @@ src/interactive-component/model.js
 src/interactive-component/view.js
 ```
 
-This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events (which is what we need `cuid` for to see _which_ component was clicked).
+This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events.
 
 To say it in different words: Check if element `Foo` was clicked (= intent) and if it was clicked change our state (= model), so the user sees a result (= view).
 
@@ -1479,17 +1528,14 @@ That's also the reason why I introduce MVI in our interactive component example:
 So how does it look like? See our `src/interactive-component/index.js`:
 
 ```javascript
-import cuid  from 'cuid';
 import intent from './intent';
 import model from './model';
 import view from './view';
 
 export default function InteractiveComponent(sources) {
-  const id = cuid();
-
-  const actions = intent(sources, id);
+  const actions = intent(sources);
   const state$ = model(actions);
-  const vtree$ = view(state$, id);
+  const vtree$ = view(state$);
 
   const sinks = {
     DOM: vtree$
@@ -1498,20 +1544,22 @@ export default function InteractiveComponent(sources) {
 }
 ```
 
-This component skeleton will be very similar in all components you'll write in Cycle. We create a unique `id`. This `id` is passed alongside with the `sources` to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned as an observable by `model`. We pass `state$` and `id` to our `view` to render our `state$` and use `id` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
+This component skeleton will be very similar in all components you'll write in Cycle. The `sources` is passed to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned as an observable by `model`. We pass `state$` to our `view` to render our `state$` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
 
 `src/interactive-component/intent.js` is the only real new concept here:
 
 ```javascript
-export default function intent({ DOM }, id) {
+export default function intent({ DOM }) {
   return {
-    decrement$: DOM.select(`.${id}.decrement`).events('click').map(event => -1),
-    increment$: DOM.select(`.${id}.increment`).events('click').map(event => +1)
+    decrement$: DOM.select('.decrement').events('click').map(event => -1),
+    increment$: DOM.select('.increment').events('click').map(event => +1)
   };
 }
 ```
 
-As I said we query our `DOM` by events. This done with basic CSS selectors (`.${id}.decrement` and `.${id}.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+As I said we query our `DOM` by events. This done with basic CSS selectors (`.decrement` and `.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+
+Since this gives us all click events that happen on every `'.decrement'` and `'.increment'` element on the DOM, the first component would be getting clicks from the second component, and vice versa. That is why we used `isolate()` in `src/app.js`. The two interactive components can now safely query for `.select('.decrement').events('click')` knowing that it will only give events from the current component instance.
 
 This is `src/interactive-component/model.js`:
 
@@ -1535,20 +1583,20 @@ And this is `src/interactive-component/view.js`:
 import { hJSX } from '@cycle/dom';
 import styles from './interactive-component.css';
 
-export default function view(state$, id) {
+export default function view(state$) {
   return state$.map(value =>
     <div className={styles.container}>
-      <button className={`${id} decrement`}>Decrement</button>
+      <button className="decrement">Decrement</button>
       &nbsp;
       Current value: {value}
       &nbsp;
-      <button className={`${id} increment`}>Increment</button>
+      <button className="increment">Increment</button>
     </div>
   );
 }
 ```
 
-Nothing fancy here. Just be sure to use `${id}` a class names on your interactive elements. You'll also notice the use of `&nbsp;`. Because JSX normalizes whitespace differently than HTML, you need to explicitly declare a non-breaking space. (You can either see this as a benefit or downside of JSX. It is up to you.)
+Nothing fancy here. You'll also notice the use of `&nbsp;`. Because JSX normalizes whitespace differently than HTML, you need to explicitly declare a non-breaking space. (You can either see this as a benefit or downside of JSX. It is up to you.)
 
 ## Redux
 
@@ -2001,18 +2049,21 @@ Our `src/app.js`:
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
+import isolate from '@cycle/isolate';
 import combineLatestObj from 'rx-combine-latest-obj';
 import ComposableComponent from './composable-component';
 
 function main(sources) {
   const componentVtrees$ = combineLatestObj({
-    composableComponent$: ComposableComponent(sources).DOM
+    composableComponent$: isolate(ComposableComponent)(sources).DOM
   });
+
   const vtree$ = componentVtrees$.map(vtrees =>
     <div>
       {vtrees.composableComponent}
     </div>
   );
+
   const sinks = {
     DOM: vtree$
   };
@@ -2029,17 +2080,14 @@ run(main, drivers);
 Now the `src/composable-component/index.js` with its `./intent.js`, `./model.js` and `./view.js`:
 
 ```javascript
-import cuid  from 'cuid';
 import intent from './intent';
 import model from './model';
 import view from './view';
 
 export default function ComposableComponent(sources) {
-  const id = cuid();
-
-  const actions = intent(sources, id);
+  const actions = intent(sources);
   const state$ = model(actions);
-  const vtree$ = view(state$, id);
+  const vtree$ = view(state$);
 
   const sinks = {
     DOM: vtree$
@@ -2051,12 +2099,12 @@ export default function ComposableComponent(sources) {
 ```javascript
 import DynamicComponent from '../dynamic-component';
 
-export default function intent(sources, id) {
+export default function intent(sources) {
   return {
-    addDynamicComponent$: sources.DOM.select(`.${id}.addDynamicComponent`)
+    addDynamicComponent$: sources.DOM.select('.addDynamicComponent')
       .events('click')
       .map(() => DynamicComponent(sources).DOM),
-    removeDynamicComponent$: sources.DOM.select(`.${id}.removeDynamicComponent`)
+    removeDynamicComponent$: sources.DOM.select('.removeDynamicComponent')
       .events('click')
       .map(event => parseInt(event.target.value))
   };
@@ -2086,15 +2134,15 @@ export default function model({ addDynamicComponent$, removeDynamicComponent$ })
 import { hJSX } from '@cycle/dom';
 import styles from './composable-component.css';
 
-export default function view(state$, id) {
+export default function view(state$) {
   return state$.map(dynamicComponents =>
     <div className={styles.container}>
-      <button className={`${id} addDynamicComponent`}>Add dynamic component</button>
+      <button className="addDynamicComponent">Add dynamic component</button>
       <hr />
       {dynamicComponents.map((dynamicComponent, index) =>
         <div>
           {dynamicComponent}
-          <button value={index} className={`${id} removeDynamicComponent`}>Remove dynamic component</button>
+          <button value={index} className="removeDynamicComponent">Remove dynamic component</button>
           {index + 1 !== dynamicComponents.length ? <hr /> : null}
         </div>
       )}
@@ -2103,9 +2151,9 @@ export default function view(state$, id) {
 }
 ```
 
-This is quite complex. I'll try to break it down. The `sources` are passed to `intent`. We query the `DOM` for `click` events on `.${id}.addDynamicComponent` and `.${id}.removeDynamicComponent` to generate the streams `addDynamicComponent$` and `removeDynamicComponent$`. `addDynamicComponent$` contains a new `vtree$` of a `DynamicComponent` for every click (`DynamicComponent(sources).DOM`) while `removeDynamicComponent$` contains the `index` parsed with `parseInt(event.target.value)` from the clicked element.
+This is quite complex. I'll try to break it down. The `sources` are passed to `intent`. We query the `DOM` for `click` events on `.addDynamicComponent` and `.removeDynamicComponent` to generate the streams `addDynamicComponent$` and `removeDynamicComponent$`. `addDynamicComponent$` contains a new `vtree$` of a `DynamicComponent` for every click (`DynamicComponent(sources).DOM`) while `removeDynamicComponent$` contains the `index` parsed with `parseInt(event.target.value)` from the clicked element.
 
-The two `actions` are than passed to our `model`. We basically want our `state$` to be an array containing all `vtree$`s of our `DynamicComponent`s. It is an array containing streams, that's why I called it `vtree$s`. (A stream containing an array would be `foos$` and a stream containing other streams would be `foo$$`, just to make things clearer by using conventions.) We `merge` `addDynamicComponent$` and `removeDynamicComponent$` into our `state$` - but not directly! Instead the return (with `map`) a callback function to add a new `vtree$` to our `vtree$s` array or to remove a `vtree$` from our `vtree$s` array. These callbacks are used inside `scan`, which passes `vtree$s` (initialized as an empty array) to the `callback` (which is either the `callback` from `addDynamicComponent$` or `removeDynamicComponent$`).
+The two `actions` are then passed to our `model`. We basically want our `state$` to be an array containing all `vtree$`s of our `DynamicComponent`s. It is an array containing streams, that's why I called it `vtree$s`. (A stream containing an array would be `foos$` and a stream containing other streams would be `foo$$`, just to make things clearer by using conventions.) We `merge` `addDynamicComponent$` and `removeDynamicComponent$` into our `state$` - but not directly! Instead the return (with `map`) a callback function to add a new `vtree$` to our `vtree$s` array or to remove a `vtree$` from our `vtree$s` array. These callbacks are used inside `scan`, which passes `vtree$s` (initialized as an empty array) to the `callback` (which is either the `callback` from `addDynamicComponent$` or `removeDynamicComponent$`).
 
 The usage in the `view` is simple. We just `map` over our array (`dynamicComponents`) and place the `vtree$`s (`{dynamicComponent}`) in our virtual DOM.
 
