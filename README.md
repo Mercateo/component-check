@@ -1466,7 +1466,51 @@ We use `this.get` and `this.set` to read and write our `value`. The important pa
 
 ## Cycle.js
 
-For Cycle.js our `src/app.js` is nearly unchanged, too. (Surprise!) Just the typical renaming of our component. But the component itself is totally restructured. First we need to install a new module called `cuid` which we use to identify a component with a unique ID. I also changed the directory and file structure to a more canonical pattern:
+For Cycle.js our `src/app.js` is nearly unchanged, too. Other than the typical renaming of our component, we also introduced a new module, `@cycle/isolate`. This will keep our component instances independent to each other, as we will see.
+
+```diff
+/** @jsx hJSX */
+import { run } from '@cycle/core';
+import { makeDOMDriver, hJSX } from '@cycle/dom';
+import { Observable } from 'rx';
++import isolate from '@cycle/isolate';
+import combineLatestObj from 'rx-combine-latest-obj';
+-import DynamicComponent from './dynamic-component';
++import InteractiveComponent from './interactive-component';
+
+function main(sources) {
+  const componentVtrees$ = combineLatestObj({
+-    dynamicComponent1$: DynamicComponent(sources).DOM,
+-    dynamicComponent2$: DynamicComponent(sources).DOM
++    interactiveComponent1$: isolate(InteractiveComponent)(sources).DOM,
++    interactiveComponent2$: isolate(InteractiveComponent)(sources).DOM
+  });
+
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+-      {vtrees.dynamicComponent1}
+-      {vtrees.dynamicComponent2}
++      {vtrees.interactiveComponent1}
++      {vtrees.interactiveComponent2}
+    </div>
+  );
+
+  const sinks = {
+    DOM: vtree$
+  };
+  return sinks;
+}
+
+const drivers = {
+  DOM: makeDOMDriver('#example-app')
+};
+
+run(main, drivers);
+```
+
+`isolate(Component)` takes a `Component` function and returns a new component function, which is now "isolated". What isolation means will make sense later on when we capture user events.
+
+The component itself is totally restructured. I changed the directory and file structure to a more canonical pattern:
 
 ```
 src/interactive-component/index.js
@@ -1475,7 +1519,7 @@ src/interactive-component/model.js
 src/interactive-component/view.js
 ```
 
-This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events (which is what we need `cuid` for to see _which_ component was clicked).
+This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events.
 
 To say it in different words: Check if element `Foo` was clicked (= intent) and if it was clicked change our state (= model), so the user sees a result (= view).
 
@@ -1484,17 +1528,14 @@ That's also the reason why I introduce MVI in our interactive component example:
 So how does it look like? See our `src/interactive-component/index.js`:
 
 ```javascript
-import cuid  from 'cuid';
 import intent from './intent';
 import model from './model';
 import view from './view';
 
 export default function InteractiveComponent(sources) {
-  const id = cuid();
-
-  const actions = intent(sources, id);
+  const actions = intent(sources);
   const state$ = model(actions);
-  const vtree$ = view(state$, id);
+  const vtree$ = view(state$);
 
   const sinks = {
     DOM: vtree$
@@ -1503,20 +1544,22 @@ export default function InteractiveComponent(sources) {
 }
 ```
 
-This component skeleton will be very similar in all components you'll write in Cycle. We create a unique `id`. This `id` is passed alongside with the `sources` to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned as an observable by `model`. We pass `state$` and `id` to our `view` to render our `state$` and use `id` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
+This component skeleton will be very similar in all components you'll write in Cycle. The `sources` is passed to our `intent`. Inside `intent` we query for DOM events in our component and interpret them as `actions` which is returned by `intent`. The `actions` are passed to `model` to change our `state$` which is returned as an observable by `model`. We pass `state$` to our `view` to render our `state$` in our component template. `view` returns `vtree$` which itself can be used in our application. Let's look into `intent`, `model` and `view` now.
 
 `src/interactive-component/intent.js` is the only real new concept here:
 
 ```javascript
-export default function intent({ DOM }, id) {
+export default function intent({ DOM }) {
   return {
-    decrement$: DOM.select(`.${id}.decrement`).events('click').map(event => -1),
-    increment$: DOM.select(`.${id}.increment`).events('click').map(event => +1)
+    decrement$: DOM.select('.decrement').events('click').map(event => -1),
+    increment$: DOM.select('.increment').events('click').map(event => +1)
   };
 }
 ```
 
-As I said we query our `DOM` by events. This done with basic CSS selectors (`.${id}.decrement` and `.${id}.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+As I said we query our `DOM` by events. This done with basic CSS selectors (`.decrement` and `.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+
+Since this gives us all click events that happen on every `'.decrement'` and `'.increment'` element on the DOM, the first component would be getting clicks from the second component, and vice versa. That is why we used `isolate()` in `src/app.js`. The two interactive components can now safely query for `.select('.decrement').events('click')` knowing that it will only give events from the current component instance.
 
 This is `src/interactive-component/model.js`:
 
@@ -1540,20 +1583,20 @@ And this is `src/interactive-component/view.js`:
 import { hJSX } from '@cycle/dom';
 import styles from './interactive-component.css';
 
-export default function view(state$, id) {
+export default function view(state$) {
   return state$.map(value =>
     <div className={styles.container}>
-      <button className={`${id} decrement`}>Decrement</button>
+      <button className="decrement">Decrement</button>
       &nbsp;
       Current value: {value}
       &nbsp;
-      <button className={`${id} increment`}>Increment</button>
+      <button className="increment">Increment</button>
     </div>
   );
 }
 ```
 
-Nothing fancy here. Just be sure to use `${id}` a class names on your interactive elements. You'll also notice the use of `&nbsp;`. Because JSX normalizes whitespace differently than HTML, you need to explicitly declare a non-breaking space. (You can either see this as a benefit or downside of JSX. It is up to you.)
+Nothing fancy here. You'll also notice the use of `&nbsp;`. Because JSX normalizes whitespace differently than HTML, you need to explicitly declare a non-breaking space. (You can either see this as a benefit or downside of JSX. It is up to you.)
 
 ## Redux
 
