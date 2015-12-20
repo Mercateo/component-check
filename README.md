@@ -1080,10 +1080,14 @@ function main(sources) {
     dynamicComponent1$: DynamicComponent(sources).DOM,
     dynamicComponent2$: DynamicComponent(sources).DOM
   });
-  const vtree$ = componentVtrees$.map(vtrees => <div>
-    {vtrees.dynamicComponent1}
-    {vtrees.dynamicComponent2}
-  </div>);
+
+  const vtree$ = componentVtrees$.map(vtrees =>
+    <div>
+      {vtrees.dynamicComponent1}
+      {vtrees.dynamicComponent2}
+    </div>
+  );
+
   const sinks = {
     DOM: vtree$
   };
@@ -1108,22 +1112,23 @@ import { Observable } from 'rx';
 import styles from './dynamic-component.css';
 
 export default function DynamicComponent(sources) {
-  const seconds$ = Observable.just(Math.ceil(Math.random() * 100))
-    .merge(Observable.interval(1000))
+  const seconds$ = Observable.interval(1000)
+    .startWith(Math.ceil(Math.random() * 100))
     .scan(seconds => ++seconds);
 
-  const vtree$ = seconds$.map(seconds => <div className={styles.container}>
-    I count {seconds} seconds.
-  </div>);
+  const vtree$ = seconds$.map(seconds =>
+    <div className={styles.container}>
+      I count {seconds} seconds.
+    </div>
+  );
 
-  const sinks = {
+  return {
     DOM: vtree$
   };
-  return sinks;
 }
 ```
 
-As said earlier you'll writing more RxJS code in a Cycle application than Cycle-specific code itself. The hardest thing to understand in this code snippet is probably `seconds$` - especially if you never used observables before. First we create a new observable with just one random value between 1 and 100 (`Observable.just(Math.ceil(Math.random() * 100))`) than we create a second observable which is triggered every second (`Observable.interval(1000)`). The second observable is `merge`d into the first one. Now we have an observable with an initial value which can _do something_ every second. The _do_ part will be counting up which is done with `scan`. With `scan` we can operate on a _previous value_. E.g. we use our random start value and after a second we increment it. After another second we get our random start value which was incremented once and increment it again. Now it is incremented twice. This step is repeated every second and this stream of values is saved in `seconds$`. Now we produce new markup if `seconds$` gets a new value with `seconds$.map`.
+As said earlier you'll be writing more RxJS code in a Cycle application than Cycle-specific code itself. The hardest thing to understand in this code snippet is probably `seconds$` - especially if you never used observables before. First we create an observable which is triggered every second (`Observable.interval(1000)`), then we prepend to it a random number between 1 and 100 (`.startWith(Math.ceil(Math.random() * 100))`). Now we have an observable with an initial value which can _do something_ every second. The _do_ part will be counting up which is done with `scan`. With `scan` we can operate on a _previous value_. E.g. we use our random start value and after a second we increment it. After another second we get our random start value which was incremented once and increment it again. Now it is incremented twice. This step is repeated every second and this stream of values is saved in `seconds$`. Now we produce new markup if `seconds$` gets a new value with `seconds$.map`.
 
 ## Redux
 
