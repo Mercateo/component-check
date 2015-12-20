@@ -2049,18 +2049,21 @@ Our `src/app.js`:
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
+import isolate from '@cycle/isolate';
 import combineLatestObj from 'rx-combine-latest-obj';
 import ComposableComponent from './composable-component';
 
 function main(sources) {
   const componentVtrees$ = combineLatestObj({
-    composableComponent$: ComposableComponent(sources).DOM
+    composableComponent$: isolate(ComposableComponent)(sources).DOM
   });
+
   const vtree$ = componentVtrees$.map(vtrees =>
     <div>
       {vtrees.composableComponent}
     </div>
   );
+
   const sinks = {
     DOM: vtree$
   };
@@ -2077,17 +2080,14 @@ run(main, drivers);
 Now the `src/composable-component/index.js` with its `./intent.js`, `./model.js` and `./view.js`:
 
 ```javascript
-import cuid  from 'cuid';
 import intent from './intent';
 import model from './model';
 import view from './view';
 
 export default function ComposableComponent(sources) {
-  const id = cuid();
-
-  const actions = intent(sources, id);
+  const actions = intent(sources);
   const state$ = model(actions);
-  const vtree$ = view(state$, id);
+  const vtree$ = view(state$);
 
   const sinks = {
     DOM: vtree$
@@ -2099,12 +2099,12 @@ export default function ComposableComponent(sources) {
 ```javascript
 import DynamicComponent from '../dynamic-component';
 
-export default function intent(sources, id) {
+export default function intent(sources) {
   return {
-    addDynamicComponent$: sources.DOM.select(`.${id}.addDynamicComponent`)
+    addDynamicComponent$: sources.DOM.select('.addDynamicComponent')
       .events('click')
       .map(() => DynamicComponent(sources).DOM),
-    removeDynamicComponent$: sources.DOM.select(`.${id}.removeDynamicComponent`)
+    removeDynamicComponent$: sources.DOM.select('.removeDynamicComponent')
       .events('click')
       .map(event => parseInt(event.target.value))
   };
@@ -2134,15 +2134,15 @@ export default function model({ addDynamicComponent$, removeDynamicComponent$ })
 import { hJSX } from '@cycle/dom';
 import styles from './composable-component.css';
 
-export default function view(state$, id) {
+export default function view(state$) {
   return state$.map(dynamicComponents =>
     <div className={styles.container}>
-      <button className={`${id} addDynamicComponent`}>Add dynamic component</button>
+      <button className="addDynamicComponent">Add dynamic component</button>
       <hr />
       {dynamicComponents.map((dynamicComponent, index) =>
         <div>
           {dynamicComponent}
-          <button value={index} className={`${id} removeDynamicComponent`}>Remove dynamic component</button>
+          <button value={index} className="removeDynamicComponent">Remove dynamic component</button>
           {index + 1 !== dynamicComponents.length ? <hr /> : null}
         </div>
       )}
@@ -2151,9 +2151,9 @@ export default function view(state$, id) {
 }
 ```
 
-This is quite complex. I'll try to break it down. The `sources` are passed to `intent`. We query the `DOM` for `click` events on `.${id}.addDynamicComponent` and `.${id}.removeDynamicComponent` to generate the streams `addDynamicComponent$` and `removeDynamicComponent$`. `addDynamicComponent$` contains a new `vtree$` of a `DynamicComponent` for every click (`DynamicComponent(sources).DOM`) while `removeDynamicComponent$` contains the `index` parsed with `parseInt(event.target.value)` from the clicked element.
+This is quite complex. I'll try to break it down. The `sources` are passed to `intent`. We query the `DOM` for `click` events on `.addDynamicComponent` and `.removeDynamicComponent` to generate the streams `addDynamicComponent$` and `removeDynamicComponent$`. `addDynamicComponent$` contains a new `vtree$` of a `DynamicComponent` for every click (`DynamicComponent(sources).DOM`) while `removeDynamicComponent$` contains the `index` parsed with `parseInt(event.target.value)` from the clicked element.
 
-The two `actions` are than passed to our `model`. We basically want our `state$` to be an array containing all `vtree$`s of our `DynamicComponent`s. It is an array containing streams, that's why I called it `vtree$s`. (A stream containing an array would be `foos$` and a stream containing other streams would be `foo$$`, just to make things clearer by using conventions.) We `merge` `addDynamicComponent$` and `removeDynamicComponent$` into our `state$` - but not directly! Instead the return (with `map`) a callback function to add a new `vtree$` to our `vtree$s` array or to remove a `vtree$` from our `vtree$s` array. These callbacks are used inside `scan`, which passes `vtree$s` (initialized as an empty array) to the `callback` (which is either the `callback` from `addDynamicComponent$` or `removeDynamicComponent$`).
+The two `actions` are then passed to our `model`. We basically want our `state$` to be an array containing all `vtree$`s of our `DynamicComponent`s. It is an array containing streams, that's why I called it `vtree$s`. (A stream containing an array would be `foos$` and a stream containing other streams would be `foo$$`, just to make things clearer by using conventions.) We `merge` `addDynamicComponent$` and `removeDynamicComponent$` into our `state$` - but not directly! Instead the return (with `map`) a callback function to add a new `vtree$` to our `vtree$s` array or to remove a `vtree$` from our `vtree$s` array. These callbacks are used inside `scan`, which passes `vtree$s` (initialized as an empty array) to the `callback` (which is either the `callback` from `addDynamicComponent$` or `removeDynamicComponent$`).
 
 The usage in the `view` is simple. We just `map` over our array (`dynamicComponents`) and place the `vtree$`s (`{dynamicComponent}`) in our virtual DOM.
 

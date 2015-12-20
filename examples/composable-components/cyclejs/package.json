@@ -5,9 +5,9 @@
     "build": "webpack"
   },
   "dependencies": {
-    "@cycle/core": "^5.0.1",
-    "@cycle/dom": "^7.1.1",
-    "cuid": "^1.3.8",
+    "@cycle/core": "6.0.0-rc2",
+    "@cycle/dom": "8.0.0-rc9",
+    "@cycle/isolate": "^1.1.1",
     "rx": "^4.0.7",
     "rx-combine-latest-obj": "^1.0.2"
   },
