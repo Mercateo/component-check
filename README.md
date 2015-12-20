@@ -10,7 +10,7 @@ In this project I want to compare the usage and development of components in sev
 * [Cycle.js](http://cycle.js.org/)
 * [React](https://facebook.github.io/react/) with [Redux](http://redux.js.org/)
 
-_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still an alpha, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release, so there is allways a little catch up game to play. We are in JS land, right?
+_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release, so there is allways a little catch up game to play. We are in JS land, right?
 
 _Note 2_: I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented and a good candidate for this comparison, because it doesn't support IE9 which is a requirement for our projects.
 
