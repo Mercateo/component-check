@@ -1,11 +1,11 @@
 import { run } from '@cycle/core';
-import { makeDOMDriver, h } from '@cycle/dom';
+import { makeDOMDriver, div } from '@cycle/dom';
 import { Observable } from 'rx';
 import StaticComponent from './static-component';
 
 function main(sources) {
   const staticComponent = StaticComponent(sources);
-  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
+  const vtree$ = staticComponent.DOM.map(staticVTree => div(staticVTree));
   const sinks = {
     DOM: vtree$
   };
