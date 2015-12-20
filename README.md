@@ -877,14 +877,14 @@ This is Cycle and its `src/static-component/index.js`:
 /** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
-import styles from './static-component.css';
++import styles from './static-component.css';
 
 export default function StaticComponent(sources) {
--  const vtree = <p>Static content.</p>;
-+  const vtree = <p className={styles.p}>Static content.</p>;
-  const vtree$ = Observable.just(vtree);
   const sinks = {
-    DOM: vtree$
+    DOM: Observable.just(
+-      <p>Static content.</p>
++      <p className={styles.p}>Static content.</p>
+    )
   };
   return sinks;
 }
