@@ -690,16 +690,16 @@ Our `src/static-component/index.js` now looks like this:
 
 ```diff
 +/** @jsx hJSX */
--import { h } from '@cycle/dom';
+-import { p } from '@cycle/dom';
 +import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
--  const vtree = h('p', 'Static content.');
-+  const vtree = <p>Static content.</p>;
-  const vtree$ = Observable.just(vtree);
   const sinks = {
-    DOM: vtree$
+    DOM: Observable.just(
+-      p('Static content.')
++      <p>Static content.</p>
+    )
   };
   return sinks;
 }
@@ -710,15 +710,15 @@ And this our `src/app.js`:
 ```diff
 +/** @jsx hJSX */
 import { run } from '@cycle/core';
--import { makeDOMDriver, h } from '@cycle/dom';
+-import { makeDOMDriver, div } from '@cycle/dom';
 +import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import StaticComponent from './static-component';
 
 function main(sources) {
   const staticComponent = StaticComponent(sources);
--  const vtree$ = staticComponent.DOM.map(staticComponent => h('div', staticComponent));
-+  const vtree$ = staticComponent.DOM.map(staticComponent => <div>{staticComponent}</div>);
+-  const vtree$ = staticComponent.DOM.map(staticVTree => h('div', staticVTree));
++  const vtree$ = staticComponent.DOM.map(staticVTree => <div>{staticVTree}</div>);
   const sinks = {
     DOM: vtree$
   };
