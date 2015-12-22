@@ -626,7 +626,7 @@ Call `$ npm start` and... _Success!_ You'll see _"Static content."_.
 
 # Introducing: JSX
 
-For all frameworks using a virtual DOM library I'll use [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) in the next examples. As said earlier JSX has pros and cons. I personally find it easier to read and I'll use it for this research project, but this is not a general recommendation. Anyway... let us recreate the static components examples for Cycle.js and React with JSX.
+For all frameworks using a virtual DOM library I'll use [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) in the next examples. As said earlier JSX has pros and cons. It is quite popular in the React and Redux community, but the Cycle community acutally recommends to use the [hyperscript-helpers](https://github.com/ohanhi/hyperscript-helpers) available through the DOM driver (e.g. `div()`, `p()`). I personally find JSX easier to read and I'll use it for this research project, but this is not a general recommendation. Anyway... let us recreate the static components examples for Cycle.js and React with JSX.
 
 First we need to enable Babel to read and transform JSX syntax. Install these two Babel plugins:
 
