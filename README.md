@@ -517,14 +517,14 @@ const drivers = {
 run(main, drivers);
 ```
 
-We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to out `DOM` driver instance as explained earlier. But what is this?:
+We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to our `DOM` driver instance as explained earlier. But what is this?:
 
 ```javascript
   const vtree = div();
   const vtree$ = Observable.just(vtree);
 ```
 
-As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead we the function `div` (or `h2`, `h3`, `ul`, `li`, etc, each corresponding to their respective DOM elements) which allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `div()` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
+As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead we use the function `div` (or `h2`, `h3`, `ul`, `li`, etc, each corresponding to their respective DOM elements) which allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `div()` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
 
 If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quite powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
 
