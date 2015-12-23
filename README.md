@@ -2363,7 +2363,7 @@ Wow! Great. We actually finished all of our examples.
 
 # Conclusion
 
-So what is the best framework to write components? No, really. I ask _you_. What do you think is the best framework? It probably depends a lot on your projects and your experience. I can't make a recommendation for you. Don't forget that these are very small examples. I know from own experiences how hard managing state in Angular 1 components gets as your app grows. This is actually the number one reason why I look into other frameworks. We didn't looked into many important parts of writing components like testability, animations, i18n, etc. It is not possible to look _deeply_ into ever framework. But by now you should have a good overview how it could be to write bigger components in one of our frameworks.
+So what is the best framework to write components? No, really. I ask _you_. What do you think is the best framework? It probably depends a lot on your projects and your experience. I can't make a recommendation for you. Don't forget that these are very small examples. I know from my own experiences how hard managing state in Angular 1 components gets as your app grows. This is actually the number one reason why I look into other frameworks. We didn't look into many important parts of writing components like testability, animations, i18n, etc. It is not possible to look _deeply_ into every framework. But by now you should have a good overview how it could be to write bigger components in one of our frameworks.
 
 Thank you for reading.
 
