@@ -1439,22 +1439,19 @@ import styles from './interactive-component.css';
 Ember.TEMPLATES['components/interactive-component'] = template;
 export default Ember.Component.extend({
   styles,
-  init() {
-    this._super(...arguments);
-    this.set('value', 0);
-  },
+  value: 0,
   actions: {
     decrement() {
-      this.set('value', this.get('value') - 1);
+      this.decrementProperty('value');
     },
     increment() {
-      this.set('value', this.get('value') + 1);
+      this.incrementProperty('value');
     }
   }
 });
 ```
 
-We use `this.get` and `this.set` to read and write our `value`. The important part is, that our `decrement` and `increment` functions are methods on a special object called `actions`. This way we can use them with the `{{action}}` helper in our `src/interactive-component/template.hbs` template:
+We use the helper methods `this.incrementProperty` and `this.decrementProperty` to update our `value`. The important part is, that our `decrement` and `increment` functions are methods on a special object called `actions`. This way we can use them with the `{{action}}` helper in our `src/interactive-component/template.hbs` template:
 
 ```handlebars
 <div class="{{styles.container}}">
