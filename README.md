@@ -10,7 +10,7 @@ In this project I want to compare the usage and development of components in sev
 * [Cycle.js](http://cycle.js.org/)
 * [React](https://facebook.github.io/react/) with [Redux](http://redux.js.org/)
 
-_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon and Cycle will introduce [isolated components](https://github.com/cyclejs/isolate) in the next release, so there is always a little catch up game to play. We are in JS land, right?
+_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon, so there is always a little catch up game to play. We are in JS land, right?
 
 _Note 2_: I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented and a good candidate for this comparison, because it doesn't support IE9 which is a requirement for our projects.
 
@@ -531,7 +531,7 @@ If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success!
 Create a file `src/static-component/index.js`:
 
 ```javascript
-import { h } from '@cycle/dom';
+import { p } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
@@ -1439,22 +1439,19 @@ import styles from './interactive-component.css';
 Ember.TEMPLATES['components/interactive-component'] = template;
 export default Ember.Component.extend({
   styles,
-  init() {
-    this._super(...arguments);
-    this.set('value', 0);
-  },
+  value: 0,
   actions: {
     decrement() {
-      this.set('value', this.get('value') - 1);
+      this.decrementProperty('value');
     },
     increment() {
-      this.set('value', this.get('value') + 1);
+      this.incrementProperty('value');
     }
   }
 });
 ```
 
-We use `this.get` and `this.set` to read and write our `value`. The important part is, that our `decrement` and `increment` functions are methods on a special object called `actions`. This way we can use them with the `{{action}}` helper in our `src/interactive-component/template.hbs` template:
+We use the helper methods `this.incrementProperty` and `this.decrementProperty` to update our `value`. The important part is, that our `decrement` and `increment` functions are methods on a special object called `actions`. This way we can use them with the `{{action}}` helper in our `src/interactive-component/template.hbs` template:
 
 ```handlebars
 <div class="{{styles.container}}">
@@ -2363,7 +2360,7 @@ Wow! Great. We actually finished all of our examples.
 
 # Conclusion
 
-So what is the best framework to write components? No, really. I ask _you_. What do you think is the best framework? It probably depends a lot on your projects and your experience. I can't make a recommendation for you. Don't forget that these are very small examples. I know from own experiences how hard managing state in Angular 1 components gets as your app grows. This is actually the number one reason why I look into other frameworks. We didn't look into many important parts of writing components like testability, animations, i18n, etc. It is not possible to look _deeply_ into every framework. But by now you should have a good overview how it could be to write bigger components in one of our frameworks.
+So what is the best framework to write components? No, really. I ask _you_. What do you think is the best framework? It probably depends a lot on your projects and your experience. I can't make a recommendation for you. Don't forget that these are very small examples. I know from my own experiences how hard managing state in Angular 1 components gets as your app grows. This is actually the number one reason why I look into other frameworks. We didn't look into many important parts of writing components like testability, animations, i18n, etc. It is not possible to look _deeply_ into every framework. But by now you should have a good overview how it could be to write bigger components in one of our frameworks.
 
 Thank you for reading.
 
