@@ -531,7 +531,7 @@ If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success!
 Create a file `src/static-component/index.js`:
 
 ```javascript
-import { h } from '@cycle/dom';
+import { p } from '@cycle/dom';
 import { Observable } from 'rx';
 
 export default function StaticComponent(sources) {
