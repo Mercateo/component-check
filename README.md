@@ -1,6 +1,6 @@
 # component-check
 
-> A quick introduction to explore how components can be created in several frameworks.
+> A quick introduction to exploring how components can be created in several frameworks.
 
 In this project I want to compare the usage and development of components in several frameworks. To test these frameworks I'll create multiple components from simple to complex to show the differences between these frameworks. I currently plan to look into the following frameworks:
 
@@ -10,7 +10,7 @@ In this project I want to compare the usage and development of components in sev
 * [Cycle.js](http://cycle.js.org/)
 * [React](https://facebook.github.io/react/) with [Redux](http://redux.js.org/)
 
-_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon, so there is allways a little catch up game to play. We are in JS land, right?
+_Note_: I'll only focus on creating components, because this is an important part of our daily business. I won't deep dive into every technical detail of the frameworks. I want to tell you _just enough_ to understand what happens. Don't forget that Angular 2 is still in beta, Ember will introduce [routable and angle brackets components](http://emberjs.com/blog/2015/05/24/another-two-oh-status-update.html) soon, so there is always a little catch up game to play. We are in JS land, right?
 
 _Note 2_: I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented and a good candidate for this comparison, because it doesn't support IE9 which is a requirement for our projects.
 
@@ -62,7 +62,7 @@ I'll create an example for every component and every framework. You'll need to i
 
 # A word about tooling
 
-I recommend to install a recent version of [Node](https://nodejs.org/en/) and [npm](https://www.npmjs.com/) before you start. I'll try to _not_ use [Bower](http://bower.io/) as a second package manager, because it is mostly superfluous nowadays. All frameworks mentioned above should be easily usable with npm only.
+I recommend installing a recent version of [Node](https://nodejs.org/en/) and [npm](https://www.npmjs.com/) before you start. I'll try to _not_ use [Bower](http://bower.io/) as a second package manager, because it is mostly superfluous nowadays. All frameworks mentioned above should be easily usable with npm only.
 
 For frameworks using virtual DOM libraries I'll use [JSX](https://facebook.github.io/jsx/), which is a syntax extension to JavaScript which I _personally_ find more readable than using the libraries directly. However I'll show an example without JSX first, before I'll introduce JSX. Recommending JSX is highly subjective. Some people like it, some people don't. Time will tell, if there is a place for it in the future.
 
@@ -477,7 +477,7 @@ Call `$ npm start` now. _"Loading..."_ disappears and _"Static content."_ is ren
 
 ## Cycle.js
 
-Cycle.js is a framework which introduces several concepts which deviate from the MVC frameworks from the last year. I recommend to read the [documentation of Cycle.js](http://cycle.js.org/) before you start, because I can't explain them here in detail. It is a relatively small framework so you don't have to learn a lot of code, but you need to learn a new paradigm to write a good Cycle application.
+Cycle.js is a framework which introduces several concepts which deviate from the MVC frameworks from the last year. I recommend reading the [documentation of Cycle.js](http://cycle.js.org/) before you start, because I can't explain them here in detail. It is a relatively small framework so you don't have to learn a lot of code, but you need to learn a new paradigm to write a good Cycle application.
 
 I'll try to break down the general idea:
 
@@ -517,14 +517,14 @@ const drivers = {
 run(main, drivers);
 ```
 
-We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to out `DOM` driver instance as explained earlier. But what is this?:
+We create a `main` function and a `drivers` object. Both are passed to `run`. The `drivers` object holds a DOM driver instance which uses the element with the ID `example-app` as the entry point to our application. The `main` function gets a `sources` object which we don't use right now, but it holds an `DOM` object and it returns a `sinks` object, which also holds a `DOM` object. `sources.DOM` and `sinks.DOM` are the input and output observables we pass to our `DOM` driver instance as explained earlier. But what is this?:
 
 ```javascript
   const vtree = div();
   const vtree$ = Observable.just(vtree);
 ```
 
-As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead we the function `div` (or `h2`, `h3`, `ul`, `li`, etc, each corresponding to their respective DOM elements) which allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `div()` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
+As we work solely on observables, we don't generate DOM markup directly (which is the job of `@cycle/dom`). Instead we use the function `div` (or `h2`, `h3`, `ul`, `li`, etc, each corresponding to their respective DOM elements) which allows us to create a virtual DOM (using the [virtual-dom library](https://github.com/Matt-Esch/virtual-dom)). In this case `div()` creates an empty `<div></div>`. This virtual DOM is often called `vtree`. The DOM driver however needs an observable to operate on, not just the virtual DOM. So we wrap our `vtree` into an observable with `Observable.just`. This function returns an observable which we call `vtree$`. The `$` suffix is an hungarian notation which is used in the Cycle community to mark observables.
 
 If you run `$ npm start` now you see the _"Loading..."_ text disappear. Success! Now we need to create our static component. This step deviates from other frameworks as a component is _just a function_. You will not find any `<static-component>` markup here. Again: Cycle comes with a lot of new concepts and paradigms. These are quite powerful (e.g. a single function can be easily tested), but you need to learn more to get started. Anyway... let's try it.
 
@@ -626,7 +626,7 @@ Call `$ npm start` and... _Success!_ You'll see _"Static content."_.
 
 # Introducing: JSX
 
-For all frameworks using a virtual DOM library I'll use [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) in the next examples. As said earlier JSX has pros and cons. It is quite popular in the React and Redux community, but the Cycle community acutally recommends to use the [hyperscript-helpers](https://github.com/ohanhi/hyperscript-helpers) available through the DOM driver (e.g. `div()`, `p()`). I personally find JSX easier to read and I'll use it for this research project, but this is not a general recommendation. Anyway... let us recreate the static components examples for Cycle.js and React with JSX.
+For all frameworks using a virtual DOM library I'll use [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) in the next examples. As said earlier JSX has pros and cons. It is quite popular in the React and Redux community, but the Cycle community actually recommends to use the [hyperscript-helpers](https://github.com/ohanhi/hyperscript-helpers) available through the DOM driver (e.g. `div()`, `p()`). I personally find JSX easier to read and I'll use it for this research project, but this is not a general recommendation. Anyway... let us recreate the static components examples for Cycle.js and React with JSX.
 
 First we need to enable Babel to read and transform JSX syntax. Install these two Babel plugins:
 
@@ -739,7 +739,7 @@ The next thing will we setup before we move on are CSS Modules. I think no one w
 With CSS Modules two components can use the same CSS class name without styling errors, because every CSS class name is _hashed_ in a unique way. This happens when a component imports a CSS file. Importing a CSS file into a JS file? That sounds like a job for webpack! To do that we need to install two new modules:
 
 - [css-loader](https://github.com/webpack/css-loader): This module loads our CSS files, hashes the CSS class names and generates Source Maps.
-- [extract-text-webpack-plugin](https://github.com/webpack/extract-text-webpack-plugin): This webpack plugin extracts every loaded CSS file and bundle the styles into a single CSS file.
+- [extract-text-webpack-plugin](https://github.com/webpack/extract-text-webpack-plugin): This webpack plugin extracts every loaded CSS file and bundles the styles into a single CSS file.
 
 
 ```bash
@@ -817,7 +817,7 @@ You can create a `src/static-component/static-component.css` file now, which loo
 }
 ```
 
-We use the generic class name `.p` which will style our `<p>` element we used in all of our static components, so its text color becomes red. Even if we would create a second component usind the _same_ class name and a text color of blue, our static component would still have red text, because our `.p` becomes hashed to something like `.static-component__p___3YbjK`. That's why I recommend to name your CSS file exactly like your component, because the name shows up in your hashed class name which is easier to read. But even you name your file to something generic like `style.css` you'll have great Source Map support, which always shows you the original file.
+We use the generic class name `.p` which will style our `<p>` element we used in all of our static components, so its text color becomes red. Even if we would create a second component using the _same_ class name and a text color of blue, our static component would still have red text, because our `.p` becomes hashed to something like `.static-component__p___3YbjK`. That's why I recommend naming your CSS file exactly like your component, because the name shows up in your hashed class name which is easier to read. But even you name your file to something generic like `style.css` you'll have great Source Map support, which always shows you the original file.
 
 Even though the CSS file looks the same for every framework, the way it is loaded is slightly different every time. So let us try to break it down and begin with Angular 1 and its `src/static-component/index.js`:
 
@@ -958,7 +958,7 @@ export default angular.module('dynamic-component', []).directive('dynamicCompone
 }).name;
 ```
 
-Let us break this down. First we set a `scope` property to `true`. This is Angulars way to say, that every `<dynamic-component>` will have its own unique state. If you omit this line every `<dynamic-component>` will show the same value, because they share the same state. After that we add a `controller` to our directive which will hold and manipulate the component state. We inject the `$interval` service (you remember [injection?](https://docs.angularjs.org/guide/di)) into the `controller`. `$interval` is a service offered by Angular itself. It is similar to the native `setInterval`, but will automatically update Angulars data-binding. The callback we pass to `$interval` will be called every `1000` ms and will count up the variable `this.seconds` with `this` being the `controller`. `this.seconds` is initialized with a random value between 1 and 100. After that we give the controller the name `ctrl` with `controllerAs`. This is need to access the `controller` in our `template`. We can now access our variable `this.seconds` inside our `template` with `{{ ctrl.seconds }}`. The `{{}}` notation is Angulars way to say _Every time `{{ ctrl.seconds }}` changes, re-render our `template`._
+Let us break this down. First we set a `scope` property to `true`. This is Angulars way to say, that every `<dynamic-component>` will have its own unique state. If you omit this line every `<dynamic-component>` will show the same value, because they share the same state. After that we add a `controller` to our directive which will hold and manipulate the component state. We inject the `$interval` service (you remember [injection?](https://docs.angularjs.org/guide/di)) into the `controller`. `$interval` is a service offered by Angular itself. It is similar to the native `setInterval`, but will automatically update Angulars data-binding. The callback we pass to `$interval` will be called every `1000` ms and will count up the variable `this.seconds` with `this` being the `controller`. `this.seconds` is initialized with a random value between 1 and 100. After that we give the controller the name `ctrl` with `controllerAs`. This is needed to access the `controller` in our `template`. We can now access our variable `this.seconds` inside our `template` with `{{ ctrl.seconds }}`. The `{{}}` notation is Angulars way to say _Every time `{{ ctrl.seconds }}` changes, re-render our `template`._
 
 ## Angular 2
 
@@ -1134,7 +1134,7 @@ As said earlier you'll be writing more RxJS code in a Cycle application than Cyc
 
 Finally we arrived at Redux. Probably the most popular framework in conjunction with React right now. Like Cycle Redux has a very unique way of designing an app. The code in the following example may seem a little bit verbose for displaying two random counters, but this approach really shines when your app grows.
 
-So, what do you need to know about Redux? Instead of declaring some components and set the state of each component separately, we declare the state _first_ and dependent on the state what components should be rendered. We also don't have a state for every component, but a _global_ state ("global" = inside one Redux application). This global state is called [_store_](http://redux.js.org/docs/basics/Store.html). But of course we don't want manage a big, complex single state for our application. With [_reducers_](http://redux.js.org/docs/basics/Reducers.html) we can manage only small slices of our store. They will update our state by creating _a new one_, because our state is [immutable](https://en.wikipedia.org/wiki/Immutable_object). That is important to keep in mind. We can't update an old state, we can only create a new one. This allows will give us nice [debugging features](https://github.com/gaearon/redux-devtools) and performance gains, because states can be compared by pointer references instead of by value. The reducers are triggered by dispatching [_actions_](http://redux.js.org/docs/basics/Actions.html).
+So, what do you need to know about Redux? Instead of declaring some components and set the state of each component separately, we declare the state _first_ and dependent on the state what components should be rendered. We also don't have a state for every component, but a _global_ state ("global" = inside one Redux application). This global state is called [_store_](http://redux.js.org/docs/basics/Store.html). But of course we don't want to manage a big, complex single state for our application. With [_reducers_](http://redux.js.org/docs/basics/Reducers.html) we can manage only small slices of our store. They will update our state by creating _a new one_, because our state is [immutable](https://en.wikipedia.org/wiki/Immutable_object). That is important to keep in mind. We can't update an old state, we can only create a new one. This allows will give us nice [debugging features](https://github.com/gaearon/redux-devtools) and performance gains, because states can be compared by pointer references instead of by value. The reducers are triggered by dispatching [_actions_](http://redux.js.org/docs/basics/Actions.html).
 
 An action describes our state change. The reducer will make this change. The store holds the state. A reducer therefore has a very simple signature: it accepts a state and an action and returns a new state (`(state, action) -> newState`).
 
@@ -1259,7 +1259,7 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(ExampleApp);
 ```
 
-We create a new `ExampleApp` class extending from Reacts `Component`. It has a `render` function which will be called by React on state changes. This `render` function will create a `<div>` and two _dumb components_ called `<DynamicComponent />`. This component is dumb, because we pass _all data_ it needs to know directly into the component as properties. (Note that _key_ is a property [needed by React](https://facebook.github.io/react/docs/multiple-components.html#dynamic-children), not something we need for our application.) We pass `index` which will be the `action.index` we allready saw in our reducer. We pass `second` which is the value our `<DynamicComponent />` should render. And we pass `incrementSecond`. This is a function which will create an action and is therefor called an _action creator_.
+We create a new `ExampleApp` class extending from Reacts `Component`. It has a `render` function which will be called by React on state changes. This `render` function will create a `<div>` and two _dumb components_ called `<DynamicComponent />`. This component is dumb, because we pass _all data_ it needs to know directly into the component as properties. (Note that _key_ is a property [needed by React](https://facebook.github.io/react/docs/multiple-components.html#dynamic-children), not something we need for our application.) We pass `index` which will be the `action.index` we already saw in our reducer. We pass `second` which is the value our `<DynamicComponent />` should render. And we pass `incrementSecond`. This is a function which will create an action and is therefor called an _action creator_.
 
 After our `ExampleApp` class you'll see two functions: `mapStateToProps` and `mapDispatchToProps`. Remember that we wrapped our `<ExampleApp>` in a `<Provider>` earlier? The `<Provider>` allows us to access our store in `<ExampleApp>`, but we want to control exactly what data can be accessed, because our store can become really big in a complex app. This is what `mapStateToProps` and `mapDispatchToProps` do. We can specify exactly what parts of the store can be accessed in our `<ExampleApp>`. In this case it is just `state.seconds` (see `mapStateToProps`). And we can specify which actions we want to eventually dispatch in our `<ExampleApp>`. In this case it is the `incrementSecond` action (see `mapDispatchToProps`). This mapping is `connect`ed with our `ExampleApp` class with the [`connect`](https://github.com/rackt/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options) helper offered by `react-redux` which makes our React `Component` aware of our Redux store.
 
@@ -1276,7 +1276,7 @@ export function incrementSecond(index) {
 }
 ```
 
-As said earlier an action creator is just a function returning an action and an action is just a simple JavaScript object. This object has a `type` by convention to identify it. In this case our `incrementSecond` action creator returns an action with the `type` set to `INCREMENT_SECOND`. It just has one other property `index`. With the `index` specified our reducer knows which second should be incremented. We allready saw that.
+As said earlier an action creator is just a function returning an action and an action is just a simple JavaScript object. This object has a `type` by convention to identify it. In this case our `incrementSecond` action creator returns an action with the `type` set to `INCREMENT_SECOND`. It just has one other property `index`. With the `index` specified our reducer knows which second should be incremented. We already saw that.
 
 There is just one missing piece now: our dumb component `<DynamicComponent>` created in `src/dynamic-component/index.html`.
 
@@ -1305,7 +1305,7 @@ export default DynamicComponent;
 
 You'll notice that this component isn't `connect`ed with Redux by using `mapStateToProps` and `mapDispatchToProps`. This is a good indicator to distinguish _dumb components_ from _smart_ containers. The only interesting thing in this `DynamicComponent` class is `componentDidMount`. This is part of [Reacts lifecycle for `Component`s](https://facebook.github.io/react/docs/component-specs.html#mounting-componentdidmount) and it is called once when a `Component` was correctly setup (aka _mounted_, immediately after the first rendering). We call `setInterval` here to call `incrementSecond` every second. Because we passed `index` from our `<ExampleApp>` to our `<DynamicComponent>` earlier, we can now pass it to our action so our reducers know which second should be incremented.
 
-And this is our working Redux example! You can see it by running `$ npm start`. Again... this example may seem a little bit verbose, but it scales well to more complex ones. If you need more data on your store you create a new reducer which also sets a default value to your data. You can access this data in _smart containers_ which are basically React `Component`s `connect`ed to a Redux store. The data than is passed from _smart containers_ to _dumb components_ which are React `Component`s _not_ `connect`ed to a Redux store, so they can be rendered.
+And this is our working Redux example! You can see it by running `$ npm start`. Again... this example may seem a little bit verbose, but it scales well to more complex ones. If you need more data on your store you create a new reducer which also sets a default value to your data. You can access this data in _smart containers_ which are basically React `Component`s `connect`ed to a Redux store. Then the data is passed from _smart containers_ to _dumb components_ which are React `Component`s _not_ `connect`ed to a Redux store, so they can be rendered.
 
 # Interactive components
 
@@ -1516,7 +1516,7 @@ src/interactive-component/model.js
 src/interactive-component/view.js
 ```
 
-This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"intepreted DOM event as the user's intended action"_. This is done by querying DOM events.
+This structure follows the [Model-View-Intent](http://cycle.js.org/model-view-intent.html) architecture (or short: MVI) which is heavily used in Cycle.js applications. You probably know model and view from MVC. So what is an intent? An intent is an _"interpreted DOM event as the user's intended action"_. This is done by querying DOM events.
 
 To say it in different words: Check if element `Foo` was clicked (= intent) and if it was clicked change our state (= model), so the user sees a result (= view).
 
@@ -1554,7 +1554,7 @@ export default function intent({ DOM }) {
 }
 ```
 
-As I said we query our `DOM` by events. This done with basic CSS selectors (`.decrement` and `.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
+As I said we query our `DOM` by events. This is done with basic CSS selectors (`.decrement` and `.increment`). These events are turned into observables describing the intended action (`decrement$` and `increment$`).
 
 Since this gives us all click events that happen on every `'.decrement'` and `'.increment'` element on the DOM, the first component would be getting clicks from the second component, and vice versa. That is why we used `isolate()` in `src/app.js`. The two interactive components can now safely query for `.select('.decrement').events('click')` knowing that it will only give events from the current component instance.
 
@@ -1624,7 +1624,7 @@ export function increment(index) {
 }
 ```
 
-Our `src/reducers.js` should look very similar too. We initialize our state as an array with two `0`s and act up on incoming `action`s.
+Our `src/reducers.js` should look very similar too. We initialize our state as an array with two `0`s and act upon incoming `action`s.
 
 ```javascript
 import { combineReducers } from 'redux';
@@ -2187,8 +2187,8 @@ export default function DynamicComponent(sources) {
 }
 ```
 
-A concept of observables I haven't explained are _hot_ and _cold_ observables. _Hot_ observables produce values even if no one is subscribed on them. _Cold_ observables produce values only if someone has subscribed on them. An observable is cold by _default_. The way we handle our `vtree$`s leads to a re-subscription every time we add or remove a `DynamicComponent`. (I don't fully understand _why_ this happens. I only know _that_ it happens and what it implies.) Because of this re-subscription every `DynamicComponent` would be reset to
-`0`, if we add or remove a `DynamicComponent`. So we need a _hot_ observable. This done with `publish` and `connect` on a separate observable I called `timer$` which produces a new value every second. With `shareReplay` the same sequence of emitted values will be shared even if the subscripion happens _after_ the first values have been emitted. That way our `DynamicComponent` won't be reset to `0` even after a re-subscription.
+A concept of observables I haven't explained is _hot_ and _cold_ observables. _Hot_ observables produce values even if no one is subscribed on them. _Cold_ observables produce values only if someone has subscribed on them. An observable is cold by _default_. The way we handle our `vtree$`s leads to a re-subscription every time we add or remove a `DynamicComponent`. (I don't fully understand _why_ this happens. I only know _that_ it happens and what it implies.) Because of this re-subscription every `DynamicComponent` would be reset to
+`0`, if we add or remove a `DynamicComponent`. So we need a _hot_ observable. This is done with `publish` and `connect` on a separate observable I called `timer$` which produces a new value every second. With `shareReplay` the same sequence of emitted values will be shared even if the subscription happens _after_ the first values have been emitted. That way our `DynamicComponent` won't be reset to `0` even after a re-subscription.
 
 ## Redux
 
