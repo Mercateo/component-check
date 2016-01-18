@@ -419,8 +419,9 @@ import applicationTemplate from './templates/application.hbs';
 Ember.TEMPLATES.application = applicationTemplate;
 
 const ExampleApp = Ember.Application.create({
+  rootElement: '#example-app',
   ready() {
-    document.getElementById('example-app').remove();
+    document.getElementById('example-app').innerHTML = '';
   }
 });
 ```
@@ -431,7 +432,7 @@ And we need `src/application.hbs` as our initial template:
 {{static-component}}
 ```
 
-In this small code example you'll already see some of Embers conventions. Ember expects a template called `application` as the initially rendered template. We need to manually add it to `Ember.TEMPLATES`, because we use webpack. This would be done automatically if we would use ember-cli. We then `create` a new `Ember.Application`. Our application will be rendered as a child element into `body`. We need to remove `#example-app` on our own, when our application is `ready`. I couldn't figure out how to render the application directly into `#example-app` like other frameworks.
+In this small code example you'll already see some of Embers conventions. Ember expects a template called `application` as the initially rendered template. We need to manually add it to `Ember.TEMPLATES`, because we use webpack. This would be done automatically if we would use ember-cli. We then `create` a new `Ember.Application`. Our application will be rendered as a child element into `#example-app` as configured with `rootElement`. But we need to remove our loading message in `#example-app` manually, when our application is `ready`.
 
 As always: our application loads, _"Loading..."_ disappears... and nothing happens. We still need our static component which is rendered as `{{static-component}}`.
 
@@ -462,8 +463,9 @@ import applicationTemplate from './application.hbs';
 Ember.TEMPLATES.application = applicationTemplate;
 
 const ExampleApp = Ember.Application.create({
+  rootElement: '#example-app',
   ready() {
-    document.getElementById('example-app').remove();
+    document.getElementById('example-app').innerHTML = '';
   }
 });
 
@@ -1954,8 +1956,9 @@ import DynamicComponent from './dynamic-component';
 Ember.TEMPLATES.application = applicationTemplate;
 
 const ExampleApp = Ember.Application.create({
+  rootElement: '#example-app',
   ready() {
-    document.getElementById('example-app').remove();
+    document.getElementById('example-app').innerHTML = '';
   }
 });
 
@@ -2063,8 +2066,9 @@ import DynamicComponent from './dynamic-component';
 Ember.TEMPLATES.application = applicationTemplate;
 
 const ExampleApp = Ember.Application.create({
+  rootElement: '#example-app',
   ready() {
-    document.getElementById('example-app').remove();
+    document.getElementById('example-app').innerHTML = '';
   }
 });
 

@@ -6,8 +6,9 @@ import InteractiveComponent from './interactive-component';
 Ember.TEMPLATES.application = applicationTemplate;
 
 const ExampleApp = Ember.Application.create({
+  rootElement: '#example-app',
   ready() {
-    document.getElementById('example-app').remove();
+    document.getElementById('example-app').innerHTML = '';
   }
 });
 
