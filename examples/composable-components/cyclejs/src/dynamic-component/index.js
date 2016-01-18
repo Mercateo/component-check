@@ -7,7 +7,7 @@ export default function DynamicComponent(sources) {
   const timer$ = Observable.timer(0, 1000).publish();
   timer$.connect();
 
-  const seconds$ = timer$.shareReplay(1).scan(seconds => ++seconds);
+  const seconds$ = timer$.shareReplay(1).scan(seconds => seconds + 1);
 
   const vtree$ = seconds$.map(seconds =>
     <div className={styles.container}>

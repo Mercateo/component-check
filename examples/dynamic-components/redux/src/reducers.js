@@ -12,7 +12,7 @@ function seconds(state = initialState, action) {
     case INCREMENT_SECOND:
       return [
         ...state.slice(0, action.index),
-        ++state[action.index],
+        state[action.index] + 1,
         ...state.slice(action.index + 1)
       ];
     default:

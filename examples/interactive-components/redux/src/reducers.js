@@ -8,13 +8,13 @@ function values(state = initialState, action) {
     case DECREMENT:
       return [
         ...state.slice(0, action.index),
-        --state[action.index],
+        state[action.index] - 1,
         ...state.slice(action.index + 1)
       ];
     case INCREMENT:
       return [
         ...state.slice(0, action.index),
-        ++state[action.index],
+        state[action.index] + 1,
         ...state.slice(action.index + 1)
       ];
     default:

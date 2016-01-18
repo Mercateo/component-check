@@ -1116,7 +1116,7 @@ import styles from './dynamic-component.css';
 export default function DynamicComponent(sources) {
   const seconds$ = Observable.interval(1000)
     .startWith(Math.ceil(Math.random() * 100))
-    .scan(seconds => ++seconds);
+    .scan(seconds => seconds + 1);
 
   const vtree$ = seconds$.map(seconds =>
     <div className={styles.container}>
@@ -1187,7 +1187,7 @@ function seconds(state = initialState, action) {
     case INCREMENT_SECOND:
       return [
         ...state.slice(0, action.index),
-        ++state[action.index],
+        state[action.index] + 1,
         ...state.slice(action.index + 1)
       ];
     default:
@@ -1213,12 +1213,12 @@ I want to shortly explain this code snippet, if you're unfamiliar with ES2015:
 ```javascript
 [
   ...state.slice(0, action.index),
-  ++state[action.index],
+  state[action.index] + 1,
   ...state.slice(action.index + 1)
 ];
 ```
 
-This creates a new array (`[]`). It contains all values (`...`) from `0` to the index specified by `action.index` (`state.slice(0, action.index)`). It counts up one value specified at `action.index` (`++state[action.index]`). It contains all values (`...`) after `action.index` (`state.slice(action.index + 1)`).
+This creates a new array (`[]`). It contains all values (`...`) from `0` to the index specified by `action.index` (`state.slice(0, action.index)`). It counts up one value specified at `action.index` (`state[action.index] + 1`). It contains all values (`...`) after `action.index` (`state.slice(action.index + 1)`).
 
 Now look into our `<ExampleApp />` specified in `src/example-app/index.js`:
 
@@ -1639,13 +1639,13 @@ function values(state = initialState, action) {
     case DECREMENT:
       return [
         ...state.slice(0, action.index),
-        --state[action.index],
+        state[action.index] - 1,
         ...state.slice(action.index + 1)
       ];
     case INCREMENT:
       return [
         ...state.slice(0, action.index),
-        ++state[action.index],
+        state[action.index] + 1,
         ...state.slice(action.index + 1)
       ];
     default:
@@ -2230,12 +2230,12 @@ import styles from './dynamic-component.css';
 export default function DynamicComponent(sources) {
 -  const seconds$ = Observable.just(Math.ceil(Math.random() * 100))
 -    .merge(Observable.interval(1000))
--    .scan(seconds => ++seconds);
+-    .scan(seconds => seconds + 1);
 
 +  const timer$ = Observable.timer(0, 1000).publish();
 +  timer$.connect();
 
-+  const seconds$ = timer$.shareReplay(1).scan(seconds => ++seconds);
++  const seconds$ = timer$.shareReplay(1).scan(seconds => seconds + 1);
 
   const vtree$ = seconds$.map(seconds =>
     <div className={styles.container}>
@@ -2306,7 +2306,7 @@ function seconds(state = initialState, action) {
     case INCREMENT_SECOND:
       return [
         ...state.slice(0, action.index),
-        ++state[action.index],
+        state[action.index] + 1,
         ...state.slice(action.index + 1)
       ];
     default:
