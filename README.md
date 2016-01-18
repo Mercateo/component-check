@@ -2004,7 +2004,7 @@ export default Ember.Component.extend({
 
 We create an `ids` array here, very similar to the Angular examples, but using Embers `get` and `set` helper. The `removeDynamicComponent` and `addDynamicComponent` methods are added to `actions` again.
 
-We use the built-in Handlebars plugin `{{#each}}` to loop over the `ids` array. Like Angular we can access an `index` inside `{{#each}}{{/each}}`. Sadly there is no equivalent to `$last` in Ember. While there is a built-in `{{#if}}` Handlebars plugin, we can't do calculations like `index + 1 === ids.length` inside it which would mirror the `$last` variable. To be honest... I couldn't find an easy way to conditionally show the `<hr>` in Ember. If _you_, dear reader, know an easy way to do this, write me.
+We use the built-in Handlebars plugin `{{#each}}` to loop over the `ids` array. Like Angular we can access an `index` inside `{{#each}}{{/each}}`.
 
 One additional thing to notice is the way params are passed to `action` handlers: `{{action "removeDynamicComponent" index}}`.
 
@@ -2036,6 +2036,65 @@ export default Ember.Component.extend({
 ```
 
 We haven't used `setInterval` in Ember, but `Ember.run.later`. I don't think it is possible to cancel the callback, so we need to check if our component was destroyed with `if (!this.isDestroyed)`, before we make changes in our state and call `count` again.
+
+As you may noticed we haven't put an `<hr />` between our `{{dynamic-component}}`s. Sadly there is no equivalent to Angulars `$last` in Ember. We need to write a helper to identify our last item inside `{{#each}}{{/each}}`. A helper is like function which can be called inside a template. It is very easy. Create a new file `src/helpers/is-last.js`:
+
+```javascript
+import Ember from '../ember-shim';
+
+export default Ember.Helper.helper(function(params) {
+  var length = params[0];
+  var index = params[1];
+
+  return length === (index + 1);
+});
+```
+
+It is just a function which we can pass arbitrary `params`. In this case our helper will get the `length` of an arry as the first param and the current `index` of our item as the second param, so we can check if the item is the last item of the array. The helper can be registered by adding the returned value from `Ember.Helper.helper` to `ExampleApp` and giving it a name and a `Helper` suffix (similar to the `Component` suffix for components):
+
+```diff
+import Ember from './ember-shim';
+import applicationTemplate from './application.hbs';
+import ComposableComponent from './composable-component';
+import DynamicComponent from './dynamic-component';
++import isLastHelper from './helpers/is-last';
+
+// register templates
+Ember.TEMPLATES.application = applicationTemplate;
+
+const ExampleApp = Ember.Application.create({
+  ready() {
+    document.getElementById('example-app').remove();
+  }
+});
+
+// register components
+ExampleApp.DynamicComponentComponent = DynamicComponent;
+ExampleApp.ComposableComponentComponent = ComposableComponent;
+
++// register helpers
++ExampleApp.IsLastHelper = isLastHelper;
+```
+
+Now use our helper in our `src/composable-component/template.hbs`:
+
+```diff
+<div class="{{styles.container}}">
+  <button {{action "addDynamicComponent"}}>Add dynamic component</button>
+  <hr />
+  {{#each ids as |id index|}}
+    {{dynamic-component}}
+    <button {{action "removeDynamicComponent" index}}>Remove dynamic component</button>
++    {{#unless (is-last ids.length index)}}
++      <hr />
++    {{/unless}}
+  {{/each}}
+</div>
+```
+
+`{{#unless}}{{/unless}}` is a built-in Handlebars plugin and will include our `<hr />` as long as `is-last` is _not_ true (hence _unless_). We pass `ids.length` and `index` to our `is-last` helper as described earlier.
+
+Great. Our Ember example is complete.
 
 ## Cycle.js
 

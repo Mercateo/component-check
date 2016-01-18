@@ -4,5 +4,8 @@
   {{#each ids as |id index|}}
     {{dynamic-component}}
     <button {{action "removeDynamicComponent" index}}>Remove dynamic component</button>
+    {{#unless (is-last ids.length index)}}
+      <hr />
+    {{/unless}}
   {{/each}}
 </div>
