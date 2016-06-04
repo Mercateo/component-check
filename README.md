@@ -678,7 +678,7 @@ And now to our Cycle.js example. Install the same Babel plugins, but now modify 
 {
   "plugins": [
 -    "transform-react-jsx"
-+    [ "transform-react-jsx", { "pragma": "DOM.hJSX" } ]
++    [ "transform-react-jsx", { "pragma": "hJSX" } ]
   ],
   "presets": [
     "es2015"
@@ -691,7 +691,6 @@ This change is necessary, because `transform-react-jsx` expects React as the def
 Our `src/static-component/index.js` now looks like this:
 
 ```diff
-+/** @jsx hJSX */
 -import { p } from '@cycle/dom';
 +import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
@@ -710,7 +709,6 @@ export default function StaticComponent(sources) {
 And this our `src/app.js`:
 
 ```diff
-+/** @jsx hJSX */
 import { run } from '@cycle/core';
 -import { makeDOMDriver, div } from '@cycle/dom';
 +import { makeDOMDriver, hJSX } from '@cycle/dom';
@@ -876,7 +874,6 @@ Ember.TEMPLATES['components/static-component'] = template;
 This is Cycle and its `src/static-component/index.js`:
 
 ```diff
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 +import styles from './static-component.css';
@@ -1070,7 +1067,6 @@ $ npm install --save rx-combine-latest-obj
 This will collect the most recent state of all components in one object, so we know, when we need to re-render our application. We use it like this in our `src/app.js`:
 
 ```javascript
-/** @jsx hJSX */
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
@@ -1108,7 +1104,6 @@ As you can see `combineLatestObj` collects multiple streams and collects them in
 This is our `src/dynamic-component/index.js`:
 
 ```javascript
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import styles from './dynamic-component.css';
@@ -1468,7 +1463,6 @@ We use the helper methods `this.incrementProperty` and `this.decrementProperty` 
 For Cycle.js our `src/app.js` is nearly unchanged, too. Other than the typical renaming of our component, we also introduced a new module, `@cycle/isolate`. This will keep our component instances independent to each other, as we will see.
 
 ```diff
-/** @jsx hJSX */
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
@@ -1578,7 +1572,6 @@ We just create a new `Observable` initialized with `0`. We then `merge` our two 
 And this is `src/interactive-component/view.js`:
 
 ```javascript
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import styles from './interactive-component.css';
 
@@ -2105,7 +2098,6 @@ Great. Our Ember example is complete.
 Our `src/app.js`:
 
 ```javascript
-/** @jsx hJSX */
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
@@ -2190,7 +2182,6 @@ export default function model({ addDynamicComponent$, removeDynamicComponent$ })
 ```
 
 ```javascript
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import styles from './composable-component.css';
 
@@ -2222,7 +2213,6 @@ Note that we conditionally dislay the `<hr />` between every `DynamicComponent` 
 The changes to `src/dynamic-component/index.js` are a little bit more complicated this time. Thank you @laszlokorte for helping me here.
 
 ```diff
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import { Observable } from 'rx';
 import styles from './dynamic-component.css';

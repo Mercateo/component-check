@@ -1,4 +1,3 @@
-/** @jsx hJSX */
 import { run } from '@cycle/core';
 import { makeDOMDriver, hJSX } from '@cycle/dom';
 import { Observable } from 'rx';

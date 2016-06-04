@@ -1,4 +1,3 @@
-/** @jsx hJSX */
 import { hJSX } from '@cycle/dom';
 import styles from './composable-component.css';
 
