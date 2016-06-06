@@ -14,6 +14,8 @@ _Note_: I'll only focus on creating components, because this is an important par
 
 _Note 2_: I will not look into [Polymer](https://www.polymer-project.org/) which is very component-oriented and a good candidate for this comparison, because it doesn't support IE9 which is a requirement for our projects.
 
+_Note 3_: I use Node v4.4.x and npm 3.9.x for my examples. There are reported problems with the build script (and a solution) for Node v6 [here](https://github.com/Mercateo/component-check/issues/20).
+
 So what is a component? Let us keep the definition short and generic and treat them as reusable and composable pieces of HTML, CSS and/or JavaScript code which are mostly used for GUI elements.
 
 #Table of contents
