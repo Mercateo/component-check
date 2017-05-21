@@ -428,7 +428,7 @@ const ExampleApp = Ember.Application.create({
 });
 ```
 
-And we need `src/application.hbs` as our initial template:
+And we need `src/templates/application.hbs` as our initial template:
 
 ```handlebars
 {{static-component}}
